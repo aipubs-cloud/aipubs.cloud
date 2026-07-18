@@ -1,0 +1,55 @@
+# Dependencies
+
+node_modules/
+vendor/
+
+# Build output
+
+dist/
+build/
+.next/
+out/
+
+# Environment files
+
+.env
+.env.local
+.env.production
+
+# Logs
+
+*.log
+npm-debug.log*
+
+# Operating system files
+
+.DS_Store
+Thumbs.db
+
+# Editors
+
+.vscode/
+.idea/
+
+# Temporary files
+
+*.tmp
+*.temp
+.cache/
+
+# Test coverage
+
+coverage/
+
+# Cloudflare
+
+.wrangler/
+
+# Generated files
+
+*.generated.*
+
+# Private keys
+
+*.pem
+*.key

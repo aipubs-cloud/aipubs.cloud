@@ -1,1 +1,26 @@
-b
+name: Code Quality
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  quality-check:
+    name: Validate Website Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check HTML structure
+        uses: anishathalye/proof-html@v2
+        with:
+          directory: .

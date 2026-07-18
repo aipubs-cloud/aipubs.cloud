@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+
+title: "AIpubs.cloud"
+
+message: "Please cite AIpubs.cloud when referencing this software or infrastructure."
+
+type: software
+
+authors:
+  - family-names: "Paiva"
+    given-names: "Kevin"
+
+version: "1.0.0"
+
+date-released: "2026-01-01"
+
+license: "Apache-2.0"
+
+repository-code: "https://github.com/YOUR_USERNAME/aipubs-cloud"
+
+keywords:
+  - artificial intelligence
+  - open research
+  - scientific publishing
+  - knowledge infrastructure

@@ -116,6 +116,7 @@
                         <a href="#" onclick="navigate('explore')" class="nav-link text-slate-600 inline-flex items-center px-1 pt-1 text-sm">Explore Research</a>
                         <a href="#" onclick="navigate('explore', {filter: 'datasets'})" class="nav-link text-slate-600 inline-flex items-center px-1 pt-1 text-sm">Datasets</a>
                         <a href="#" onclick="navigate('publish')" class="nav-link text-slate-600 inline-flex items-center px-1 pt-1 text-sm">Publish</a>
+                        <a href="#" onclick="navigate('trust')" class="nav-link text-slate-600 inline-flex items-center px-1 pt-1 text-sm">Trust Center</a>
                         <a href="#" onclick="navigate('about')" class="nav-link text-slate-600 inline-flex items-center px-1 pt-1 text-sm">About</a>
                     </div>
                 </div>
@@ -206,6 +207,13 @@
                 stats: { citations: 142, downloads: 4521, views: 12050 },
                 hasDataset: true,
                 hasCode: true,
+                provenance: {
+                    status: "Verified",
+                    acf: "sha256:8f4b4a8a7f9b2c6e1a5d0f3c9e7b1a2d4c6f8e0a3b5d7c9f1e2a4b6c8d0e2f4a",
+                    alc: "sha256:5c2e6f8a1d4b7c9e0f3a5d8b1c4e6f9a2d5b8c1e4f7a0d3c6e9b2a5d8f1c4e7",
+                    signer: "AIPubs RAIP Release Key",
+                    vectors: "TV-008..011"
+                },
                 markdownContent: `
 ## 1. Introduction
 
@@ -287,6 +295,13 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                 stats: { citations: 89, downloads: 3100, views: 8400 },
                 hasDataset: false,
                 hasCode: true,
+                provenance: {
+                    status: "Verified",
+                    acf: "sha256:42a8d7e9c1f4b6a0d3e5f8b2c4a7d9e1f3b6c8a0d2e5f7b9c1a4d6e8f0b3c5a7",
+                    alc: "sha256:91c4e7a0d3f6b9c2e5a8d1f4b7c0e3a6d9f2b5c8e1a4d7f0b3c6e9a2d5f8b1c4",
+                    signer: "AIPubs RAIP Release Key",
+                    vectors: "TV-008..011"
+                },
                 markdownContent: "## Introduction\n\nFull text of Topological Interpretability..."
             },
             {
@@ -302,6 +317,13 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                 stats: { citations: 12, downloads: 850, views: 2100 },
                 hasDataset: true,
                 hasCode: false,
+                provenance: {
+                    status: "Pending vectors",
+                    acf: "sha256:7b1d4f6a9c2e5b8d0f3a6c9e1b4d7f0a3c6e9b2d5f8a1c4e7b0d3f6a9c2e5b8",
+                    alc: "sha256:pending-alc-after-review",
+                    signer: "Author key pending",
+                    vectors: "awaiting TV-008 baseline"
+                },
                 markdownContent: "## Abstract\n\nFull text of Federated RL..."
             }
         ];
@@ -312,6 +334,34 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             datasets: "1,105",
             openSource: "9,420"
         };
+
+        const raipLayers = [
+            {
+                name: "Artifact Content Fingerprint",
+                shortName: "ACF",
+                icon: "ph-fingerprint",
+                description: "Computes a deterministic SHA-256 identity for the exact paper, dataset, code bundle, model checkpoint, or generated artifact."
+            },
+            {
+                name: "Artifact Lifecycle Chain",
+                shortName: "ALC",
+                icon: "ph-git-branch",
+                description: "Chains lifecycle events such as created, submitted, reviewed, revised, published, cited, and archived into tamper-evident history."
+            },
+            {
+                name: "RAIP-SIGN Attestation",
+                shortName: "SIGN",
+                icon: "ph-seal-check",
+                description: "Binds artifact identity and lifecycle state to author, reviewer, lab, institution, or platform signing keys."
+            }
+        ];
+
+        const raipVectors = [
+            { id: "RAIP-TV-008", mutation: "None", expected: "Full envelope passes" },
+            { id: "RAIP-TV-009", mutation: "Artifact bytes changed", expected: "ACF mismatch" },
+            { id: "RAIP-TV-010", mutation: "Lifecycle event changed", expected: "ALC mismatch" },
+            { id: "RAIP-TV-011", mutation: "Signature bytes changed", expected: "SIGN failure" }
+        ];
 
         // --- Application State Management ---
         const AppState = {
@@ -421,6 +471,40 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                         </div>
                     </div>
 
+                    <!-- RAIP Trust Layer -->
+                    <section class="bg-gradient-to-br from-slate-950 via-slate-900 to-brand-900 text-white py-16">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="grid lg:grid-cols-2 gap-10 items-center">
+                                <div>
+                                    <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-100 ring-1 ring-white/15 mb-4">
+                                        <i class="ph ph-shield-check mr-1"></i> RAIP provenance layer
+                                    </span>
+                                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">Publish research with verifiable identity, history, and attestation.</h2>
+                                    <p class="text-slate-300 text-lg leading-relaxed mb-6">
+                                        AIPubs is being upgraded with the Research Artifact Integrity Protocol so every paper, dataset, code bundle, model checkpoint, and AI-generated artifact can carry its own evidence envelope.
+                                    </p>
+                                    <div class="flex flex-wrap gap-3">
+                                        <button onclick="navigate('trust')" class="bg-white text-slate-900 px-5 py-2.5 rounded-lg font-medium hover:bg-slate-100 transition shadow-sm flex items-center gap-2">
+                                            <i class="ph ph-seal-check"></i> Open Trust Center
+                                        </button>
+                                        <button onclick="navigate('publish')" class="bg-white/10 text-white border border-white/20 px-5 py-2.5 rounded-lg font-medium hover:bg-white/15 transition flex items-center gap-2">
+                                            <i class="ph ph-upload-simple"></i> Prepare evidence
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid sm:grid-cols-3 gap-4">
+                                    ${raipLayers.map(layer => `
+                                        <div class="bg-white/10 border border-white/15 rounded-xl p-5 backdrop-blur">
+                                            <i class="ph ${layer.icon} text-3xl text-brand-100"></i>
+                                            <h3 class="font-bold mt-4 mb-2">${layer.shortName}</h3>
+                                            <p class="text-sm text-slate-300 leading-relaxed">${layer.description}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Main Content Grid -->
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                         <div class="flex flex-col md:flex-row gap-12">
@@ -514,6 +598,7 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                 <span class="inline-flex items-center rounded-md bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-700/10">${paper.category}</span>
                                 ${paper.hasDataset ? `<span class="inline-flex items-center rounded-md bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"><i class="ph-fill ph-database mr-1"></i> Dataset</span>` : ''}
                                 ${paper.hasCode ? `<span class="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-500/20"><i class="ph-fill ph-code mr-1"></i> Code</span>` : ''}
+                                <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20"><i class="ph-fill ph-shield-check mr-1"></i> ${paper.provenance.status}</span>
                             </div>
                             
                             <h1 class="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6 text-balance leading-tight">
@@ -561,6 +646,29 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                     </button>
                                 </div>
                                 
+                                <!-- RAIP Provenance -->
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1"><i class="ph-fill ph-shield-check"></i> RAIP Evidence</h3>
+                                        <span class="text-[10px] font-semibold text-blue-700 bg-white/70 rounded-full px-2 py-0.5">${paper.provenance.status}</span>
+                                    </div>
+                                    <dl class="space-y-2 text-xs">
+                                        <div>
+                                            <dt class="font-semibold text-blue-900">ACF</dt>
+                                            <dd class="font-mono text-blue-700 break-all">${paper.provenance.acf}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="font-semibold text-blue-900">ALC</dt>
+                                            <dd class="font-mono text-blue-700 break-all">${paper.provenance.alc}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="font-semibold text-blue-900">Signer</dt>
+                                            <dd class="text-blue-700">${paper.provenance.signer}</dd>
+                                        </div>
+                                    </dl>
+                                    <button onclick="navigate('trust')" class="mt-3 w-full bg-white border border-blue-200 text-blue-700 py-2 rounded-md text-xs font-semibold hover:bg-blue-100 transition">View verification model</button>
+                                </div>
+
                                 <!-- Abstract -->
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-2">Abstract</h3>
@@ -720,6 +828,7 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                     <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-200">${paper.category}</span>
                                     ${paper.hasDataset ? `<span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded border border-green-200 flex items-center gap-1"><i class="ph-fill ph-database"></i> Dataset</span>` : ''}
                                     ${paper.hasCode ? `<span class="px-2 py-1 bg-slate-50 text-slate-700 text-xs rounded border border-slate-200 flex items-center gap-1"><i class="ph-fill ph-code"></i> Code</span>` : ''}
+                                    <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded border border-blue-200 flex items-center gap-1"><i class="ph-fill ph-shield-check"></i> ${paper.provenance.status}</span>
                                 </div>
                             </div>
                         </div>
@@ -736,6 +845,55 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             return html;
         }
         
+        function renderTrustCenter() {
+            return `
+                <div class="fade-in bg-white">
+                    <section class="bg-slate-950 text-white py-16 border-b border-slate-800">
+                        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <span class="inline-flex items-center rounded-full bg-brand-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-100 ring-1 ring-brand-400/30 mb-5">Research Artifact Integrity Protocol</span>
+                            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-5 text-balance">AIPubs Trust Center</h1>
+                            <p class="text-lg text-slate-300 max-w-3xl leading-relaxed">RAIP upgrades AIPubs from a static archive into a verified knowledge network. The platform records exact artifact identity, tamper-evident lifecycle history, and cryptographic attestations for publications and supporting evidence.</p>
+                        </div>
+                    </section>
+                    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+                        <div class="grid md:grid-cols-3 gap-6 mb-12">
+                            ${raipLayers.map(layer => `
+                                <div class="border border-slate-200 rounded-xl p-6 bg-slate-50">
+                                    <i class="ph ${layer.icon} text-4xl text-brand-600"></i>
+                                    <h2 class="text-xl font-bold text-slate-900 mt-4">${layer.name}</h2>
+                                    <p class="text-sm text-slate-600 leading-relaxed mt-2">${layer.description}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="grid lg:grid-cols-2 gap-10 items-start">
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-900 mb-4">Full-envelope vector roadmap</h2>
+                                <p class="text-slate-600 mb-5">The next RAIP milestone derives adversarial vectors from a single valid baseline envelope. This confirms that the verifier can diagnose identity, lifecycle, and signature failures separately.</p>
+                                <div class="overflow-hidden border border-slate-200 rounded-xl">
+                                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                                        <thead class="bg-slate-50 text-left text-slate-500 uppercase tracking-wider text-xs"><tr><th class="px-4 py-3">Vector</th><th class="px-4 py-3">Mutation</th><th class="px-4 py-3">Expected</th></tr></thead>
+                                        <tbody class="divide-y divide-slate-200 bg-white">
+                                            ${raipVectors.map(vec => `<tr><td class="px-4 py-3 font-mono font-semibold text-slate-900">${vec.id}</td><td class="px-4 py-3 text-slate-600">${vec.mutation}</td><td class="px-4 py-3 text-slate-600">${vec.expected}</td></tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="bg-slate-900 text-slate-100 rounded-xl p-6 shadow-lg">
+                                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-code"></i> Target verifier contract</h2>
+                                <pre class="text-xs overflow-x-auto bg-slate-950 p-4 rounded-lg"><code>{
+  "overall": false,
+  "artifact": { "valid": false, "reason": "acf_mismatch" },
+  "lifecycle": { "valid": false, "reason": "not_evaluated" },
+  "signature": { "valid": false, "reason": "not_trusted" }
+}</code></pre>
+                                <p class="text-sm text-slate-400 mt-4">Forensic provenance should explain which seal cracked, not only report that verification failed.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            `;
+        }
+
         function renderInfoView(title, content) {
             return `
                 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 fade-in text-center">
@@ -773,7 +931,9 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             } else if (route === 'explore') {
                 root.innerHTML = renderExplore();
             } else if (route === 'publish') {
-                root.innerHTML = renderInfoView("Publish via GitHub", "AIPubs.cloud uses a Git-backed workflow. Write your research in Markdown or MDX, include your data and code, and push to our submission repository. Automated actions handle typesetting, metadata extraction, and deployment.");
+                root.innerHTML = renderInfoView("Publish with RAIP evidence", "AIPubs.cloud uses a Git-backed workflow. Write your research in Markdown or MDX, include datasets and code, and prepare for automated RAIP envelope generation, metadata extraction, verification reports, and deployment.");
+            } else if (route === 'trust') {
+                root.innerHTML = renderTrustCenter();
             } else if (route === 'about') {
                  root.innerHTML = renderInfoView("About AIPubs.cloud", "A permanent, open-access architecture designed to accelerate artificial intelligence research through transparency, reproducibility, and community collaboration. No paywalls, no delays.");
             } else {

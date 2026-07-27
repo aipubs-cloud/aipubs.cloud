@@ -74,4 +74,4 @@ jobs:
 
       - name: Mypy check
         if: steps.aiol.outputs.aiol_changed == 'true'
-        run: mypy raip || true
+        run: mypy --ignore-missing-imports raip raip-media/raip_media

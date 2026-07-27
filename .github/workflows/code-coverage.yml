@@ -24,3 +24,4 @@ jobs:
         uses: anishathalye/proof-html@v2
         with:
           directory: .
+          ignore_url_re: '^https://fonts\.googleapis\.com|^https://fonts\.gstatic\.com|^https://twitter\.com'

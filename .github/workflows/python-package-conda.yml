@@ -1,0 +1,25 @@
+- name: Deploy PACKAGE.broker to Cloudflare Workers
+  # You may pin to the exact commit or the version.
+  # uses: package-broker/cloudflare-deploy-action@e75b4f09bb1bccebe08c9414ef0a059007055306
+  uses: package-broker/cloudflare-deploy-action@v0.0.2
+  with:
+    # Cloudflare API token with Workers, D1, KV, R2, and Queues permissions
+    cloudflare_api_token: 
+    # Cloudflare account ID
+    cloudflare_account_id: 
+    # Base64-encoded encryption key for PACKAGE.broker
+    encryption_key: 
+    # Worker name (defaults to repository name)
+    worker_name: # optional, default is 
+    # Cloudflare Workers tier: free or paid
+    tier: # optional, default is free
+    # Node.js version to use
+    node_version: # optional, default is 20
+    # Wrangler version to install (3 or 4)
+    wrangler_version: # optional, default is 3
+    # Skip UI build if pre-built assets are available
+    skip_ui_build: # optional, default is false
+    # Skip migration application
+    skip_migrations: # optional, default is false
+    # Custom domain to use (e.g., app.example.com). Adds route configuration. User must manually create CNAME record.
+    domain: # optional, default is 

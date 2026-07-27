@@ -1,0 +1,63 @@
+name: RAIP Core CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "raip/**"
+      - "pyproject.toml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "raip/**"
+      - "pyproject.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  raip-tests:
+    name: RAIP v1.0 Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install RAIP package
+        run: pip install -e ".[dev]"
+
+      - name: Run tests with coverage
+        run: python -m pytest raip/tests/ -v --tb=short --cov=raip --cov-report=term-missing
+
+      - name: Confirm conformance vectors pass
+        run: python -m pytest raip/tests/test_vectors.py -v
+
+  raip-media-tests:
+    name: RAIP Media MVP Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install raip-media
+        run: pip install -e "./raip-media[dev]"
+
+      - name: Run tests
+        run: |
+          cd raip-media
+          python -m pytest raip_media/tests/ -v --tb=short

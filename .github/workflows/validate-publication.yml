@@ -1,0 +1,113 @@
+name: Validate Publication
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "research/papers/**"
+      - "research/datasets/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Paper Submission
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation dependencies
+        run: pip install PyYAML jsonschema
+
+      - name: Validate paper YAML frontmatter
+        run: |
+          python - << 'EOF'
+          import sys, re, json
+          from pathlib import Path
+          try:
+              import yaml
+              import jsonschema
+          except ImportError as e:
+              print(f"Missing dependency: {e}", file=sys.stderr)
+              sys.exit(1)
+
+          schema_path = Path("schemas/paper.schema.json")
+          if not schema_path.exists():
+              print("warning: schemas/paper.schema.json not found, skipping schema validation")
+              sys.exit(0)
+
+          schema = json.loads(schema_path.read_text(encoding="utf-8"))
+          papers_dir = Path("research/papers")
+          errors = []
+          checked = 0
+
+          for md in sorted(papers_dir.rglob("*.md")):
+              if md.name.startswith("."):
+                  continue
+              text = md.read_text(encoding="utf-8")
+              match = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.DOTALL)
+              if not match:
+                  continue  # no frontmatter — skip
+              try:
+                  fm = yaml.safe_load(match.group(1)) or {}
+              except yaml.YAMLError as e:
+                  errors.append(f"{md}: YAML parse error: {e}")
+                  continue
+              try:
+                  jsonschema.validate(fm, schema)
+                  checked += 1
+                  print(f"  ✓ {md.relative_to(papers_dir)}")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"{md}: {e.message}")
+
+          if errors:
+              print("\nValidation errors:")
+              for err in errors:
+                  print(f"  ✗ {err}")
+              sys.exit(1)
+          else:
+              print(f"\nAll {checked} paper(s) passed schema validation.")
+          EOF
+
+      - name: Validate RAIP envelopes
+        run: |
+          python - << 'EOF'
+          import sys, json
+          from pathlib import Path
+
+          raip_files = list(Path("research/papers").rglob("*.raip.json"))
+          if not raip_files:
+              print("No RAIP envelopes found — skipping verification.")
+              sys.exit(0)
+
+          try:
+              from raip.core.verifier import verify_paper
+          except ImportError:
+              print("RAIP package not installed — skipping RAIP verification.")
+              sys.exit(0)
+
+          errors = []
+          for raip_path in raip_files:
+              paper_stem = raip_path.stem.replace(".raip", "")
+              paper_path = raip_path.parent / f"{paper_stem}.md"
+              if not paper_path.exists():
+                  continue
+              report = verify_paper(paper_path)
+              if report.overall:
+                  print(f"  ✓ {raip_path.name}")
+              else:
+                  errors.append(f"  ✗ {raip_path.name}: {report.to_json()}")
+
+          if errors:
+              for e in errors:
+                  print(e)
+              sys.exit(1)
+          EOF

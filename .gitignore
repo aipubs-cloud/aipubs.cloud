@@ -57,3 +57,8 @@ coverage/
 .dev.vars*
 !.dev.vars.example
 !.env.example
+.raip/
+raip.egg-info/
+raip-media/*.egg-info/
+__pycache__/
+*.pyc

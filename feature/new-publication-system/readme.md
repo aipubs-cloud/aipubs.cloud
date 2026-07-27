@@ -14,15 +14,67 @@ The new publication system replaces the current static mock data with a Git-back
 - **Peer review via GitHub** — open review comments in pull requests with timestamped history
 - **Dataset linking** — datasets in `research/datasets/` are versioned and fingerprinted alongside papers
 
-## Planned Components
+## Components
 
 | Component | Status |
 |---|---|
 | Submission template (`research/templates/paper-template.md`) | ✅ Done |
-| RAIP envelope generator (CLI) | 🔲 Planned |
-| Metadata extractor (frontmatter → search index) | 🔲 Planned |
+| RAIP v1.0 core library (`raip/core/`) | ✅ Done |
+| RAIP CLI (`raip publish/verify/inspect/sign/revoke/export/history`) | ✅ Done |
+| RAIP schemas (`raip/schemas/raip.schema.json`) | ✅ Done |
+| RAIP conformance vectors TV-008..011 | ✅ Done |
+| Paper metadata schema (`schemas/paper.schema.json`) | ✅ Done |
+| Metadata extractor → search index (`scripts/generate_papers_index.py`) | ✅ Done |
+| CI publication gate (`validate-publication.yml`) | ✅ Done |
+| CI search index generator (`generate-index.yml`) | ✅ Done |
+| RAIP Media Intelligence Suite MVP (`raip-media/`) | ✅ Done |
+| Console TUI dashboard (`raip-media dashboard`) | ✅ Done |
 | DOI assignment service | 🔲 Planned |
-| CI publication gate (conformance + schema checks) | 🔲 Planned |
+| Author profiles (`authors/`) | 🔲 Planned |
+| Peer review platform | 🔲 Planned |
+
+## Quick Start
+
+### Publish a paper with RAIP
+
+```bash
+# Install the RAIP CLI
+pip install -e .
+
+# Initialise RAIP keypair in your working directory
+raip init
+
+# Publish a paper (generates paper.raip.json)
+raip publish research/papers/my-paper.md
+
+# Verify integrity
+raip verify research/papers/my-paper.md
+
+# Inspect the envelope
+raip inspect research/papers/my-paper.md
+
+# Export citation
+raip export research/papers/my-paper.md --format bibtex
+```
+
+### Process media with RAIP Media Suite
+
+```bash
+# Install raip-media
+pip install -e ./raip-media
+
+# Transcribe and generate provenance
+raip-media transcribe lecture.mp4
+
+# Show live dashboard
+raip-media dashboard lecture/
+
+# Verify provenance
+raip-media verify lecture/manifest.json
+
+# Export formats
+raip-media export lecture/ --all
+```
 
 ## Contributing
 

@@ -1,0 +1,45 @@
+name: Generate Search Index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "research/papers/**"
+      - "scripts/generate_papers_index.py"
+
+permissions:
+  contents: write
+
+jobs:
+  generate-index:
+    name: Generate papers.json
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install PyYAML
+
+      - name: Generate search index
+        run: python scripts/generate_papers_index.py --out research/papers/index.json
+
+      - name: Commit index if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet research/papers/index.json; then
+            echo "No changes to index."
+          else
+            git add research/papers/index.json
+            git commit -m "ci: regenerate papers search index [skip ci]"
+            git push
+          fi

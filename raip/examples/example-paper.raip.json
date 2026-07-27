@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "acf": "sha256:77137863eccdfbf6ad2a3bd096aeb21f7b9630dfb0bf4d2154242631e64271c0",
+  "alc": "sha256:6b7e51f99861dd99c24c3761a353349c802294b78014b04ae5944c5e0b3d3111",
+  "signature": "DRrp7AjFtFFyf1npoxBx8arKi5MTEOqDO11WFhxZHlVgI7C7j00dniN0llsYQhVm4e6qJqSgYWIs5Jz_8TEMBg==",
+  "public_key": "kW-_fil2tf2C0hEopaOYocM4h50XhTP3DoJiDsOP83s=",
+  "author": "Alex Researcher",
+  "created": "2026-07-27T08:46:09.526146+00:00",
+  "algorithm": "SHA256",
+  "sign_algorithm": "Ed25519",
+  "events": [
+    {
+      "type": "CREATED",
+      "timestamp": "2026-07-27T08:46:09.526146+00:00",
+      "actor": "Alex Researcher",
+      "metadata": {
+        "tool": "raip-cli",
+        "version": "1.0.0"
+      }
+    }
+  ]
+}

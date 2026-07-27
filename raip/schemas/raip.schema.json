@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/raip.schema.json",
+  "title": "RAIP Envelope",
+  "description": "Research Artifact Integrity Protocol v1.0 envelope schema",
+  "type": "object",
+  "required": ["version", "acf", "alc", "signature", "public_key", "author", "created", "algorithm", "sign_algorithm", "events"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "RAIP envelope version"
+    },
+    "acf": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Artifact Content Fingerprint (SHA-256 hex with prefix)"
+    },
+    "alc": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Artifact Lifecycle Chain (SHA-256 hex with prefix)"
+    },
+    "signature": {
+      "type": "string",
+      "description": "URL-safe base64 Ed25519 signature over ACF + ALC"
+    },
+    "public_key": {
+      "type": "string",
+      "description": "URL-safe base64 raw Ed25519 public key (32 bytes)"
+    },
+    "author": {
+      "type": "string",
+      "description": "Author identifier (name, ORCID, or email)"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC creation timestamp"
+    },
+    "algorithm": {
+      "type": "string",
+      "const": "SHA256",
+      "description": "Hash algorithm used for ACF and ALC"
+    },
+    "sign_algorithm": {
+      "type": "string",
+      "const": "Ed25519",
+      "description": "Digital signature algorithm"
+    },
+    "events": {
+      "type": "array",
+      "description": "Ordered list of lifecycle events",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "timestamp", "actor"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "CREATED", "SUBMITTED", "REVIEWED", "REVISED",
+              "ACCEPTED", "PUBLISHED", "ARCHIVED", "REVOKED"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}

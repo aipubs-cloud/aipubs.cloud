@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/paper.schema.json",
+  "title": "AIPubs.cloud Paper Metadata",
+  "description": "Schema for YAML frontmatter in research paper submissions",
+  "type": "object",
+  "required": ["title", "authors", "abstract", "keywords", "category", "license", "date", "version"],
+  "additionalProperties": true,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "description": "Full paper title"
+    },
+    "authors": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of authors",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name":        { "type": "string" },
+          "orcid":       { "type": "string", "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$" },
+          "affiliation": { "type": "string" },
+          "email":       { "type": "string" },
+          "github":      { "type": "string" },
+          "website":     { "type": "string" }
+        }
+      }
+    },
+    "abstract": {
+      "type": "string",
+      "minLength": 50,
+      "description": "Paper abstract (150-250 words recommended)"
+    },
+    "keywords": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Keywords for discovery and filtering"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Large Language Models",
+        "Machine Learning",
+        "Deep Learning",
+        "Reinforcement Learning",
+        "Computer Vision",
+        "Natural Language Processing",
+        "AI Alignment",
+        "Interpretability",
+        "Cognitive Architectures",
+        "Synthetic Intelligence",
+        "Federated Learning",
+        "Ethics",
+        "Other"
+      ]
+    },
+    "license": {
+      "type": "string",
+      "enum": ["CC BY 4.0", "CC BY-SA 4.0", "CC BY-NC 4.0", "CC BY-NC-SA 4.0", "MIT", "Apache-2.0", "CC0 1.0"],
+      "description": "Publication license"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Submission date (YYYY-MM-DD)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Paper version (e.g. 1.0, 1.1)"
+    },
+    "doi": {
+      "type": "string",
+      "description": "Digital Object Identifier (assigned after acceptance)"
+    },
+    "raip": {
+      "type": "string",
+      "description": "Reference to the RAIP envelope file"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "hasDataset": { "type": "boolean" },
+    "hasCode":    { "type": "boolean" },
+    "datasets":   { "type": "array", "items": { "type": "string" } },
+    "code":       { "type": "string" },
+    "references": { "type": "array", "items": { "type": "string" } },
+    "funding":        { "type": "string" },
+    "grants":         { "type": "array", "items": { "type": "string" } },
+    "ethics":         { "type": "string" },
+    "conflicts":      { "type": "string" },
+    "supplementary":  { "type": "string" },
+    "video":          { "type": "string" },
+    "slides":         { "type": "string" }
+  }
+}

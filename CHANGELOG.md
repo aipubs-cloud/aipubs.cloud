@@ -4,6 +4,76 @@ All notable changes to AIpubs.cloud are documented here.
 
 ---
 
+# Version 1.2.0
+
+## RAIP v1.0 Publication Engine
+
+Added:
+
+- `raip/` — Research Artifact Integrity Protocol v1.0 Python package
+  - `raip/core/canonicalize.py` — RAIP-C14N deterministic JSON canonicalization
+  - `raip/core/hashing.py` — SHA-256 Artifact Content Fingerprint (ACF)
+  - `raip/core/lifecycle.py` — Artifact Lifecycle Chain (ALC) with chained event hashing
+  - `raip/core/signatures.py` — Ed25519 RAIP-SIGN attestation (sign + verify)
+  - `raip/core/verifier.py` — Diagnostic RAIP-VERIFY-REPORT with per-layer results
+  - `raip/cli/main.py` — CLI entry point (`raip` command)
+  - `raip/cli/publish.py` — Generate RAIP envelope for a paper
+  - `raip/cli/verify.py` — Verify paper integrity (ACF + ALC + SIGN)
+  - `raip/cli/inspect.py` — Display envelope contents
+  - `raip/cli/sign.py` — Re-sign envelope with local key
+  - `raip/cli/revoke.py` — Append REVOKED lifecycle event
+  - `raip/schemas/raip.schema.json` — JSON Schema for RAIP envelopes
+  - `raip/examples/example-paper.md` — Example paper with complete frontmatter
+  - CLI commands: `raip init/publish/verify/inspect/sign/revoke/export/history`
+- `raip/tests/` — 37 tests including conformance vectors TV-008..011
+  - TV-008: valid baseline → PASS
+  - TV-009: artifact bytes mutated → ACF failure
+  - TV-010: lifecycle event mutated → ALC failure
+  - TV-011: signature tampered → SIGN failure
+
+## RAIP Media Intelligence Suite MVP
+
+Added:
+
+- `raip-media/` — Standalone media processing tool with RAIP provenance
+  - `raip_media/raip_core.py` — Self-contained RAIP primitives (no external RAIP package required)
+  - `raip_media/extractor.py` — Audio extraction via ffmpeg (graceful fallback)
+  - `raip_media/transcriber.py` — Whisper transcription with deterministic stub backend
+  - `raip_media/provenance.py` — Maps pipeline outputs to RAIP artifacts (manifest + envelope)
+  - `raip_media/dashboard.py` — `rich` console TUI dashboard (live pipeline + bundle view)
+  - `raip_media/cli.py` — CLI: `raip-media transcribe/verify/dashboard/export/batch`
+  - `raip_media/exporters/` — TXT, Markdown, and SRT subtitle exporters
+  - 12 tests covering primitives, provenance, and determinism
+
+## Publication Metadata Engine (Phase 2)
+
+Added:
+
+- `schemas/paper.schema.json` — JSON Schema for paper YAML frontmatter with required/optional fields
+- `.github/workflows/validate-publication.yml` — CI gate: schema + RAIP validation on PR
+
+## Search Index Generator (Phase 3)
+
+Added:
+
+- `scripts/generate_papers_index.py` — Scans `research/papers/` and generates `index.json`
+- `.github/workflows/generate-index.yml` — Auto-regenerates index on push to main
+
+## Citation Export (Phase 5, partial)
+
+Added:
+
+- `raip export <paper.md> --format bibtex|ris|csl` — One-command citation export
+
+## Infrastructure
+
+Added:
+
+- `pyproject.toml` — RAIP package configuration (setuptools, console_scripts entry point)
+- `.github/workflows/raip-ci.yml` — RAIP test matrix (Python 3.10–3.12)
+
+---
+
 # Version 1.1.0
 
 ## Site & Infrastructure Improvements

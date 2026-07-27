@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raip"
+version = "1.0.0"
+description = "Research Artifact Integrity Protocol"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "cryptography>=41.0.0",
+    "PyYAML>=6.0",
+    "jsonschema>=4.17.0",
+]
+
+[project.scripts]
+raip = "raip.cli.main:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["raip*"]
+
+[tool.pytest.ini_options]
+testpaths = ["raip/tests"]

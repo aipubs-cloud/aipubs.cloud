@@ -1,0 +1,58 @@
+{
+  "$schema": "https://aipubs.cloud/schemas/publication.schema.json",
+  "id": "paper-example",
+  "title": "Example Research Publication Title",
+  "authors": [
+    {
+      "name": "Jane Researcher",
+      "given": "Jane",
+      "family": "Researcher",
+      "orcid": "0000-0002-1825-0097",
+      "affiliation": "Institute for Open Science",
+      "email": "jane@example.org"
+    },
+    {
+      "name": "John Collaborator",
+      "given": "John",
+      "family": "Collaborator",
+      "affiliation": "Open AI Research Lab"
+    }
+  ],
+  "version": "1.0",
+  "license": "CC-BY-4.0",
+  "date": "2026-07-27",
+  "abstract": "This is a reference publication manifest demonstrating all supported fields for AIPubs.cloud. Real publications should replace every field with actual research metadata. Abstracts should be 150–250 words summarising the problem, methodology, key results, and conclusions.",
+  "keywords": [
+    "open research",
+    "reproducibility",
+    "AI publishing",
+    "provenance"
+  ],
+  "category": "Machine Learning",
+  "doi": "",
+  "url": "https://aipubs.cloud/#paper?id=paper-example",
+  "repository": "https://github.com/aipubs-cloud/aipubs.cloud",
+  "hash": "",
+  "raip": "",
+  "datasets": [],
+  "code": "https://github.com/aipubs-cloud/aipubs.cloud",
+  "version_history": [
+    {
+      "version": "1.0",
+      "date": "2026-07-27",
+      "description": "Initial submission",
+      "hash": ""
+    }
+  ],
+  "provenance": {
+    "acf": "",
+    "alc": "",
+    "signer": "",
+    "status": "Pending vectors",
+    "vectors": ""
+  },
+  "funding": "",
+  "grants": [],
+  "ethics": "No ethical concerns.",
+  "conflicts": "The authors declare no conflicts of interest."
+}

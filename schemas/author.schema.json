@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/author.schema.json",
+  "title": "AIPubs.cloud Author Profile",
+  "description": "Schema for author profile metadata on AIPubs.cloud",
+  "type": "object",
+  "required": ["name"],
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Full display name of the author"
+    },
+    "given": {
+      "type": "string",
+      "description": "Given (first) name, used for citation formatting"
+    },
+    "family": {
+      "type": "string",
+      "description": "Family (last) name, used for citation formatting"
+    },
+    "orcid": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$",
+      "description": "ORCID iD (e.g. 0000-0002-1825-0097)"
+    },
+    "affiliation": {
+      "type": "string",
+      "description": "Primary institutional affiliation"
+    },
+    "affiliations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "All institutional affiliations"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Contact email address"
+    },
+    "github": {
+      "type": "string",
+      "description": "GitHub username (without @)"
+    },
+    "twitter": {
+      "type": "string",
+      "description": "Twitter/X handle (without @)"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "Personal or institutional website URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short author biography (1–3 sentences)"
+    },
+    "avatar": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to author avatar image"
+    },
+    "publications": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of AIPubs.cloud publication IDs authored by this person"
+    },
+    "joined": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Date the author joined AIPubs.cloud (YYYY-MM-DD)"
+    }
+  }
+}

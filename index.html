@@ -5,18 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIPubs.cloud | Open AI Research</title>
     <meta name="description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
-    <link rel="canonical" href="https://www.aipubs.cloud/">
+    <link rel="canonical" href="https://aipubs.cloud/">
     <link rel="icon" href="/public/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
 
     <!-- Open Graph / Social -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.aipubs.cloud/">
+    <meta property="og:url" content="https://aipubs.cloud/">
     <meta property="og:title" content="AIPubs.cloud | Open AI Research">
     <meta property="og:description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
     <meta property="og:site_name" content="AIPubs.cloud">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AIPubs.cloud | Open AI Research">
     <meta name="twitter:description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
+
+    <!-- Dublin Core Metadata -->
+    <meta name="DC.title" content="AIPubs.cloud | Open AI Research">
+    <meta name="DC.description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
+    <meta name="DC.publisher" content="AIPubs.cloud">
+    <meta name="DC.type" content="InteractiveResource">
+    <meta name="DC.format" content="text/html">
+    <meta name="DC.language" content="en">
+    <meta name="DC.rights" content="CC BY 4.0">
+    <meta name="DC.identifier" content="https://aipubs.cloud/">
+    <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+
+    <!-- Schema.org JSON-LD: Site-level Organization -->
+    <script type="application/ld+json" id="jsonld-site">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "AIPubs.cloud",
+      "url": "https://aipubs.cloud/",
+      "description": "A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "AIPubs.cloud",
+        "url": "https://aipubs.cloud/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://aipubs.cloud/public/favicon.svg"
+        },
+        "sameAs": [
+          "https://github.com/aipubs-cloud/aipubs.cloud"
+        ]
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://aipubs.cloud/#explore?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
@@ -538,6 +578,124 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             });
         }
 
+        // --- Citation Formatting ---
+
+        function buildCitations(paper) {
+            const year = paper.date.split('-')[0];
+            const doi = `10.aipubs/${paper.id}`;
+            const url = `https://aipubs.cloud/#paper?id=${paper.id}`;
+            const authors = paper.authors;
+            const authorListFull = authors.map(a => a.name).join(', ');
+            const firstFamily = authors[0].name.split(' ').slice(-1)[0];
+            const cslAuthors = authors.map(a => {
+                const parts = a.name.split(' ');
+                return { family: parts.slice(-1)[0], given: parts.slice(0, -1).join(' ') };
+            });
+
+            const bibtex =
+`@article{${firstFamily.toLowerCase()}${year},
+  title={${paper.title}},
+  author={${authorListFull}},
+  journal={AIPubs.cloud},
+  year={${year}},
+  url={${url}},
+  doi={${doi}}
+}`;
+
+            const apa =
+`${authorListFull}. (${year}). ${paper.title}. <em>AIPubs.cloud</em>. https://doi.org/${doi}`;
+
+            const mla =
+`${cslAuthors.map((a, i) => i === 0 ? `${a.family}, ${a.given}` : a.given + ' ' + a.family).join(', and ')}. "${paper.title}." <em>AIPubs.cloud</em>, ${year}, ${url}.`;
+
+            const chicago =
+`${cslAuthors.map((a, i) => i === 0 ? `${a.family}, ${a.given}` : `${a.given} ${a.family}`).join(', ')}. "${paper.title}." <em>AIPubs.cloud</em> (${year}). ${url}.`;
+
+            const cslJson = JSON.stringify({
+                id: paper.id,
+                type: 'article-journal',
+                title: paper.title,
+                author: cslAuthors,
+                issued: { 'date-parts': [[parseInt(year)]] },
+                'container-title': 'AIPubs.cloud',
+                DOI: doi,
+                URL: url
+            }, null, 2);
+
+            return { bibtex, apa, mla, chicago, cslJson };
+        }
+
+        function copyCitation(btn, text) {
+            const plain = text.replace(/<[^>]+>/g, '');
+            navigator.clipboard.writeText(plain).then(function() {
+                btn.innerHTML = '<i class="ph ph-check text-green-600"></i>';
+                setTimeout(() => { btn.innerHTML = '<i class="ph ph-copy"></i>'; }, 2000);
+            }).catch(function() {
+                btn.innerHTML = '<i class="ph ph-warning text-red-500"></i>';
+                setTimeout(() => { btn.innerHTML = '<i class="ph ph-copy"></i>'; }, 2000);
+            });
+        }
+
+        function activateCitationTab(tabId, panelId) {
+            document.querySelectorAll('.citation-tab').forEach(t => {
+                t.classList.remove('bg-white', 'text-brand-700', 'font-semibold', 'shadow-sm');
+                t.classList.add('text-slate-500');
+            });
+            document.querySelectorAll('.citation-panel').forEach(p => p.classList.add('hidden'));
+            const tab = document.getElementById(tabId);
+            const panel = document.getElementById(panelId);
+            if (tab) {
+                tab.classList.add('bg-white', 'text-brand-700', 'font-semibold', 'shadow-sm');
+                tab.classList.remove('text-slate-500');
+            }
+            if (panel) panel.classList.remove('hidden');
+        }
+
+        // --- Dynamic Schema.org JSON-LD for paper pages ---
+
+        function injectPaperJsonLd(paper) {
+            const existing = document.getElementById('jsonld-paper');
+            if (existing) existing.remove();
+            const year = paper.date.split('-')[0];
+            const jsonld = {
+                '@context': 'https://schema.org',
+                '@type': 'ScholarlyArticle',
+                'headline': paper.title,
+                'abstract': paper.abstract,
+                'datePublished': paper.date,
+                'keywords': paper.tags.join(', '),
+                'author': paper.authors.map(a => ({ '@type': 'Person', 'name': a.name, 'affiliation': { '@type': 'Organization', 'name': a.org } })),
+                'publisher': { '@type': 'Organization', 'name': 'AIPubs.cloud', 'url': 'https://aipubs.cloud/' },
+                'isAccessibleForFree': true,
+                'url': `https://aipubs.cloud/#paper?id=${paper.id}`,
+                'identifier': `https://doi.org/10.aipubs/${paper.id}`
+            };
+            const script = document.createElement('script');
+            script.type = 'application/ld+json';
+            script.id = 'jsonld-paper';
+            script.textContent = JSON.stringify(jsonld, null, 2);
+            document.head.appendChild(script);
+        }
+
+        function removePaperJsonLd() {
+            const el = document.getElementById('jsonld-paper');
+            if (el) el.remove();
+        }
+
+        function updatePageMeta(title, description) {
+            document.title = title;
+            const descEl = document.querySelector('meta[name="description"]');
+            if (descEl) descEl.setAttribute('content', description);
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.setAttribute('content', title);
+            const ogDesc = document.querySelector('meta[property="og:description"]');
+            if (ogDesc) ogDesc.setAttribute('content', description);
+            const dcTitle = document.querySelector('meta[name="DC.title"]');
+            if (dcTitle) dcTitle.setAttribute('content', title);
+            const dcDesc = document.querySelector('meta[name="DC.description"]');
+            if (dcDesc) dcDesc.setAttribute('content', description);
+        }
+
         function applyPostRenderFormatting(elementId) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -718,8 +876,18 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
         function renderPaper(id) {
             const paper = mockPapers.find(p => p.id === id) || mockPapers[0]; // fallback
             
+            // Inject dynamic Schema.org JSON-LD and update page meta
+            injectPaperJsonLd(paper);
+            updatePageMeta(
+                `${paper.title} | AIPubs.cloud`,
+                paper.abstract.slice(0, 200).replace(/\s+/g, ' ').trim()
+            );
+
             // Render markdown content
             const renderedHtml = marked.parse(paper.markdownContent);
+
+            // Build all citation formats
+            const cites = buildCitations(paper);
 
             let html = `
                 <div class="bg-white min-h-screen fade-in" id="paper-view-container">
@@ -729,9 +897,9 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div class="flex gap-2 mb-4">
                                 <span class="inline-flex items-center rounded-md bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-700/10">${paper.category}</span>
-                                ${paper.hasDataset ? `<span class="inline-flex items-center rounded-md bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"><i class="ph-fill ph-database mr-1"></i> Dataset</span>` : ''}
-                                ${paper.hasCode ? `<span class="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-500/20"><i class="ph-fill ph-code mr-1"></i> Code</span>` : ''}
-                                <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20"><i class="ph-fill ph-shield-check mr-1"></i> ${paper.provenance.status}</span>
+                                ${paper.hasDataset ? `<span class="inline-flex items-center rounded-md bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20"><i class="ph-fill ph-database mr-1" aria-hidden="true"></i> Dataset</span>` : ''}
+                                ${paper.hasCode ? `<span class="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-500/20"><i class="ph-fill ph-code mr-1" aria-hidden="true"></i> Code</span>` : ''}
+                                <span class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20"><i class="ph-fill ph-shield-check mr-1" aria-hidden="true"></i> ${paper.provenance.status}</span>
                             </div>
                             
                             <h1 class="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-6 text-balance leading-tight">
@@ -749,12 +917,12 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                         `).join('')}
                                     </div>
                                 </div>
-                                <div class="h-8 w-px bg-slate-300 hidden sm:block"></div>
+                                <div class="h-8 w-px bg-slate-300 hidden sm:block" aria-hidden="true"></div>
                                 <div class="flex flex-col gap-1">
                                     <span class="text-slate-500 uppercase tracking-wider text-xs font-semibold">Published</span>
-                                    <span class="font-medium text-slate-800">${paper.date}</span>
+                                    <time datetime="${paper.date}" class="font-medium text-slate-800">${paper.date}</time>
                                 </div>
-                                <div class="h-8 w-px bg-slate-300 hidden sm:block"></div>
+                                <div class="h-8 w-px bg-slate-300 hidden sm:block" aria-hidden="true"></div>
                                 <div class="flex flex-col gap-1">
                                     <span class="text-slate-500 uppercase tracking-wider text-xs font-semibold">DOI</span>
                                     <span class="font-mono text-slate-600 text-xs mt-0.5">10.aipubs/${paper.id}</span>
@@ -767,22 +935,22 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col lg:flex-row gap-12">
                         
                         <!-- Left Sidebar (Metadata & Actions) -->
-                        <aside class="lg:w-1/4 order-2 lg:order-1 space-y-8">
+                        <aside class="lg:w-1/4 order-2 lg:order-1 space-y-8" aria-label="Paper metadata">
                             <div class="sticky top-24 space-y-6">
                                 <!-- Actions -->
                                 <div class="space-y-3">
-                                    <button class="w-full bg-brand-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-brand-700 transition shadow-sm flex items-center justify-center gap-2">
-                                        <i class="ph ph-file-pdf text-lg"></i> Download PDF
+                                    <button class="w-full bg-brand-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-brand-700 transition shadow-sm flex items-center justify-center gap-2" aria-label="Download PDF of ${paper.title}">
+                                        <i class="ph ph-file-pdf text-lg" aria-hidden="true"></i> Download PDF
                                     </button>
-                                    <button class="w-full bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium hover:bg-slate-50 transition shadow-sm flex items-center justify-center gap-2">
-                                        <i class="ph ph-github-logo text-lg"></i> Source Repository
+                                    <button class="w-full bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium hover:bg-slate-50 transition shadow-sm flex items-center justify-center gap-2" aria-label="View source repository">
+                                        <i class="ph ph-github-logo text-lg" aria-hidden="true"></i> Source Repository
                                     </button>
                                 </div>
                                 
                                 <!-- RAIP Provenance -->
-                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200" role="region" aria-label="RAIP provenance evidence">
                                     <div class="flex items-center justify-between mb-3">
-                                        <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1"><i class="ph-fill ph-shield-check"></i> RAIP Evidence</h3>
+                                        <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1"><i class="ph-fill ph-shield-check" aria-hidden="true"></i> RAIP Evidence</h3>
                                         <span class="text-[10px] font-semibold text-blue-700 bg-white/70 rounded-full px-2 py-0.5">${paper.provenance.status}</span>
                                     </div>
                                     <dl class="space-y-2 text-xs">
@@ -813,29 +981,73 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                 <!-- Tags -->
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-2">Keywords</h3>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${paper.tags.map(t => `<span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md">${t}</span>`).join('')}
+                                    <div class="flex flex-wrap gap-2" role="list" aria-label="Keywords">
+                                        ${paper.tags.map(t => `<span role="listitem" class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md">${t}</span>`).join('')}
                                     </div>
                                 </div>
 
-                                <!-- Citation -->
-                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Cite as (BibTeX)</h3>
-                                        <button class="text-slate-500 hover:text-brand-600" title="Copy to clipboard" onclick="copyBibtex(this, '${paper.id}', '${paper.title.replace(/'/g, "\\'")}', '${paper.authors[0].name.replace(/'/g, "\\'")}', '${paper.date.split('-')[0]}')"><i class="ph ph-copy"></i></button>
+                                <!-- Citation Panel (multi-format) -->
+                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200" role="region" aria-label="Citation formats">
+                                    <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Cite This Publication</h3>
+                                    <!-- Tabs -->
+                                    <div class="flex flex-wrap gap-1 bg-slate-100 rounded-md p-1 mb-3" role="tablist" aria-label="Citation format tabs">
+                                        <button id="cite-tab-bibtex" role="tab" aria-controls="cite-panel-bibtex" aria-selected="true"
+                                            class="citation-tab px-2 py-1 rounded text-xs bg-white text-brand-700 font-semibold shadow-sm"
+                                            onclick="activateCitationTab('cite-tab-bibtex','cite-panel-bibtex')">BibTeX</button>
+                                        <button id="cite-tab-apa" role="tab" aria-controls="cite-panel-apa" aria-selected="false"
+                                            class="citation-tab px-2 py-1 rounded text-xs text-slate-500"
+                                            onclick="activateCitationTab('cite-tab-apa','cite-panel-apa')">APA</button>
+                                        <button id="cite-tab-mla" role="tab" aria-controls="cite-panel-mla" aria-selected="false"
+                                            class="citation-tab px-2 py-1 rounded text-xs text-slate-500"
+                                            onclick="activateCitationTab('cite-tab-mla','cite-panel-mla')">MLA</button>
+                                        <button id="cite-tab-chicago" role="tab" aria-controls="cite-panel-chicago" aria-selected="false"
+                                            class="citation-tab px-2 py-1 rounded text-xs text-slate-500"
+                                            onclick="activateCitationTab('cite-tab-chicago','cite-panel-chicago')">Chicago</button>
+                                        <button id="cite-tab-csl" role="tab" aria-controls="cite-panel-csl" aria-selected="false"
+                                            class="citation-tab px-2 py-1 rounded text-xs text-slate-500"
+                                            onclick="activateCitationTab('cite-tab-csl','cite-panel-csl')">CSL-JSON</button>
                                     </div>
-                                    <pre class="text-[10px] font-mono text-slate-600 overflow-x-auto">@article{${paper.id},
-  title={${paper.title}},
-  author={${paper.authors[0].name} et al.},
-  journal={AIPubs.cloud},
-  year={${paper.date.split('-')[0]}}
-}</pre>
+                                    <!-- BibTeX Panel -->
+                                    <div id="cite-panel-bibtex" role="tabpanel" aria-labelledby="cite-tab-bibtex" class="citation-panel">
+                                        <div class="flex justify-end mb-1">
+                                            <button class="text-slate-500 hover:text-brand-600 text-xs flex items-center gap-1" aria-label="Copy BibTeX citation" onclick="copyCitation(this, \`${cites.bibtex.replace(/`/g, '\\`')}\`)"><i class="ph ph-copy" aria-hidden="true"></i> Copy</button>
+                                        </div>
+                                        <pre class="text-[10px] font-mono text-slate-600 overflow-x-auto whitespace-pre-wrap bg-white border border-slate-200 rounded p-2">${cites.bibtex.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+                                    </div>
+                                    <!-- APA Panel -->
+                                    <div id="cite-panel-apa" role="tabpanel" aria-labelledby="cite-tab-apa" class="citation-panel hidden">
+                                        <div class="flex justify-end mb-1">
+                                            <button class="text-slate-500 hover:text-brand-600 text-xs flex items-center gap-1" aria-label="Copy APA citation" onclick="copyCitation(this, \`${cites.apa.replace(/`/g,'\\`').replace(/"/g,'\\"')}\`)"><i class="ph ph-copy" aria-hidden="true"></i> Copy</button>
+                                        </div>
+                                        <p class="text-[11px] text-slate-600 leading-relaxed bg-white border border-slate-200 rounded p-2">${cites.apa}</p>
+                                    </div>
+                                    <!-- MLA Panel -->
+                                    <div id="cite-panel-mla" role="tabpanel" aria-labelledby="cite-tab-mla" class="citation-panel hidden">
+                                        <div class="flex justify-end mb-1">
+                                            <button class="text-slate-500 hover:text-brand-600 text-xs flex items-center gap-1" aria-label="Copy MLA citation" onclick="copyCitation(this, \`${cites.mla.replace(/`/g,'\\`').replace(/"/g,'\\"')}\`)"><i class="ph ph-copy" aria-hidden="true"></i> Copy</button>
+                                        </div>
+                                        <p class="text-[11px] text-slate-600 leading-relaxed bg-white border border-slate-200 rounded p-2">${cites.mla}</p>
+                                    </div>
+                                    <!-- Chicago Panel -->
+                                    <div id="cite-panel-chicago" role="tabpanel" aria-labelledby="cite-tab-chicago" class="citation-panel hidden">
+                                        <div class="flex justify-end mb-1">
+                                            <button class="text-slate-500 hover:text-brand-600 text-xs flex items-center gap-1" aria-label="Copy Chicago citation" onclick="copyCitation(this, \`${cites.chicago.replace(/`/g,'\\`').replace(/"/g,'\\"')}\`)"><i class="ph ph-copy" aria-hidden="true"></i> Copy</button>
+                                        </div>
+                                        <p class="text-[11px] text-slate-600 leading-relaxed bg-white border border-slate-200 rounded p-2">${cites.chicago}</p>
+                                    </div>
+                                    <!-- CSL-JSON Panel -->
+                                    <div id="cite-panel-csl" role="tabpanel" aria-labelledby="cite-tab-csl" class="citation-panel hidden">
+                                        <div class="flex justify-end mb-1">
+                                            <button class="text-slate-500 hover:text-brand-600 text-xs flex items-center gap-1" aria-label="Copy CSL-JSON citation" onclick="copyCitation(this, \`${cites.cslJson.replace(/`/g,'\\`')}\`)"><i class="ph ph-copy" aria-hidden="true"></i> Copy</button>
+                                        </div>
+                                        <pre class="text-[10px] font-mono text-slate-600 overflow-x-auto whitespace-pre-wrap bg-white border border-slate-200 rounded p-2">${cites.cslJson.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+                                    </div>
                                 </div>
                             </div>
                         </aside>
 
                         <!-- Right Column (Document Content) -->
-                        <article class="lg:w-3/4 order-1 lg:order-2">
+                        <article class="lg:w-3/4 order-1 lg:order-2" aria-label="Publication content">
                             <!-- Tailwind Typography Prose Class handles all the heavy lifting for formatting markdown -->
                             <div class="prose prose-slate prose-lg max-w-none hover:prose-a:text-brand-600" id="markdown-content">
                                 ${renderedHtml}
@@ -1053,6 +1265,15 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             
             // Clear current content
             root.innerHTML = '';
+
+            // Reset page meta for non-paper routes
+            if (route !== 'paper') {
+                removePaperJsonLd();
+                updatePageMeta(
+                    'AIPubs.cloud | Open AI Research',
+                    'A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.'
+                );
+            }
 
             // Render view based on route
             if (route === 'home') {

@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
+Sitemap: https://aipubs.cloud/sitemap.xml
 Sitemap: https://www.aipubs.cloud/sitemap.xml

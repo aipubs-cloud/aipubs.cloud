@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIPubs.cloud | Open AI Research</title>
     <meta name="description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
-    
+    <link rel="canonical" href="https://www.aipubs.cloud/">
+    <link rel="icon" href="/public/favicon.ico" type="image/x-icon">
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.aipubs.cloud/">
+    <meta property="og:title" content="AIPubs.cloud | Open AI Research">
+    <meta property="og:description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
+    <meta property="og:site_name" content="AIPubs.cloud">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AIPubs.cloud | Open AI Research">
+    <meta name="twitter:description" content="A permanent archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.">
+
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,8 +90,7 @@
         }
     </script>
     
-    <!-- Typography Plugin for prose classes -->
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <!-- Typography Plugin for prose classes is loaded above with the main Tailwind CDN -->
 
     <style>
         /* Custom scrollbar for a cleaner look */
@@ -128,6 +139,10 @@
                         <input type="text" id="global-search" class="block w-64 pl-10 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition" placeholder="Search papers, authors, tags...">
                     </div>
                     <button class="bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition shadow-sm">Sign In</button>
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" aria-label="Open menu">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -136,6 +151,48 @@
     <main id="app-root" class="flex-grow w-full">
         <!-- Dynamic content will be injected here -->
     </main>
+
+    <!-- Mobile Navigation Menu -->
+    <div id="mobile-menu" class="hidden fixed inset-0 z-40 md:hidden">
+        <div class="fixed inset-0 bg-slate-900/50" id="mobile-menu-backdrop"></div>
+        <div class="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                <span class="font-bold text-lg text-slate-900">Menu</span>
+                <button id="mobile-menu-close" class="p-2 rounded-md text-slate-600 hover:bg-slate-100 transition" aria-label="Close menu">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+            <!-- Mobile search -->
+            <div class="p-4 border-b border-slate-100">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="ph ph-magnifying-glass text-slate-400"></i>
+                    </div>
+                    <input type="text" id="mobile-search" class="block w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-brand-500" placeholder="Search papers, authors...">
+                </div>
+            </div>
+            <nav class="flex-grow p-4 space-y-1">
+                <a href="#" onclick="navigate('home'); closeMobileMenu();" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-700 hover:bg-slate-100 hover:text-brand-600 transition text-sm font-medium">
+                    <i class="ph ph-house text-lg"></i> Home
+                </a>
+                <a href="#" onclick="navigate('explore'); closeMobileMenu();" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-700 hover:bg-slate-100 hover:text-brand-600 transition text-sm font-medium">
+                    <i class="ph ph-magnifying-glass text-lg"></i> Explore Research
+                </a>
+                <a href="#" onclick="navigate('explore', {filter: 'datasets'}); closeMobileMenu();" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-700 hover:bg-slate-100 hover:text-brand-600 transition text-sm font-medium">
+                    <i class="ph ph-database text-lg"></i> Datasets
+                </a>
+                <a href="#" onclick="navigate('publish'); closeMobileMenu();" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-700 hover:bg-slate-100 hover:text-brand-600 transition text-sm font-medium">
+                    <i class="ph ph-upload-simple text-lg"></i> Publish
+                </a>
+                <a href="#" onclick="navigate('trust'); closeMobileMenu();" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-700 hover:bg-slate-100 hover:text-brand-600 transition text-sm font-medium">
+                    <i class="ph ph-shield-check text-lg"></i> Trust Center
+                </a>
+                <a href="#" onclick="navigate('about'); closeMobileMenu();" class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-700 hover:bg-slate-100 hover:text-brand-600 transition text-sm font-medium">
+                    <i class="ph ph-info text-lg"></i> About
+                </a>
+            </nav>
+        </div>
+    </div>
 
     <footer class="bg-white border-t border-slate-200 mt-auto">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -151,32 +208,32 @@
                         A permanent, open-access archive for artificial intelligence research, whitepapers, reproducible experiments, and open scientific collaboration.
                     </p>
                     <div class="flex space-x-4 mt-6">
-                        <a href="#" class="text-slate-400 hover:text-brand-600 transition"><i class="ph ph-github-logo text-2xl"></i></a>
-                        <a href="#" class="text-slate-400 hover:text-brand-600 transition"><i class="ph ph-twitter-logo text-2xl"></i></a>
-                        <a href="#" class="text-slate-400 hover:text-brand-600 transition"><i class="ph ph-discord-logo text-2xl"></i></a>
+                        <a href="https://github.com/aipubs-cloud/aipubs.cloud" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-brand-600 transition" aria-label="GitHub"><i class="ph ph-github-logo text-2xl"></i></a>
+                        <a href="https://twitter.com/aipubscloud" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-brand-600 transition" aria-label="Twitter / X"><i class="ph ph-twitter-logo text-2xl"></i></a>
+                        <a href="https://discord.gg/aipubs" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-brand-600 transition" aria-label="Discord"><i class="ph ph-discord-logo text-2xl"></i></a>
                     </div>
                 </div>
                 <div>
                     <h3 class="text-sm font-semibold text-slate-900 tracking-wider uppercase mb-4">Resources</h3>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">Browse Publications</a></li>
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">Datasets Library</a></li>
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">API Documentation</a></li>
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">Submission Guidelines</a></li>
+                        <li><a href="#" onclick="navigate('explore')" class="text-sm text-slate-600 hover:text-brand-600">Browse Publications</a></li>
+                        <li><a href="#" onclick="navigate('explore', {filter: 'datasets'})" class="text-sm text-slate-600 hover:text-brand-600">Datasets Library</a></li>
+                        <li><a href="https://github.com/aipubs-cloud/aipubs.cloud/blob/main/docs/RAIP_WHITEPAPER.md" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 hover:text-brand-600">API Documentation</a></li>
+                        <li><a href="#" onclick="navigate('publish')" class="text-sm text-slate-600 hover:text-brand-600">Submission Guidelines</a></li>
                     </ul>
                 </div>
                 <div>
                     <h3 class="text-sm font-semibold text-slate-900 tracking-wider uppercase mb-4">Platform</h3>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">About Us</a></li>
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">Open Source Workflow</a></li>
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">Privacy Policy</a></li>
-                        <li><a href="#" class="text-sm text-slate-600 hover:text-brand-600">Terms of Service</a></li>
+                        <li><a href="#" onclick="navigate('about')" class="text-sm text-slate-600 hover:text-brand-600">About Us</a></li>
+                        <li><a href="https://github.com/aipubs-cloud/aipubs.cloud" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 hover:text-brand-600">Open Source Workflow</a></li>
+                        <li><a href="https://github.com/aipubs-cloud/aipubs.cloud/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 hover:text-brand-600">Privacy Policy</a></li>
+                        <li><a href="https://github.com/aipubs-cloud/aipubs.cloud/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-600 hover:text-brand-600">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
             <div class="mt-12 border-t border-slate-200 pt-8 text-center md:text-left md:flex md:justify-between items-center">
-                <p class="text-sm text-slate-500">&copy; 2024 AIPubs.cloud Initiative. Open Science under CC BY 4.0.</p>
+                <p class="text-sm text-slate-500">&copy; <span id="footer-year"></span> AIPubs.cloud Initiative. Open Science under CC BY 4.0.</p>
                 <div class="mt-4 md:mt-0 flex items-center justify-center space-x-2 text-sm text-slate-500">
                     <span class="flex items-center gap-1"><i class="ph-fill ph-check-circle text-green-500"></i> Systems Operational</span>
                 </div>
@@ -370,11 +427,42 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             searchQuery: ''
         };
 
+        // --- URL helpers ---
+        function buildHash(route, params) {
+            if (route === 'home') return '/';
+            let hash = '#' + route;
+            const qs = new URLSearchParams();
+            if (params.query) qs.set('q', params.query);
+            if (params.filter && params.filter !== 'all') qs.set('filter', params.filter);
+            if (params.id) qs.set('id', params.id);
+            const qstr = qs.toString();
+            return qstr ? hash + '?' + qstr : hash;
+        }
+
+        function parseHash() {
+            const raw = window.location.hash;
+            if (!raw || raw === '#') return { route: 'home', params: {} };
+            const [hashPart, queryPart] = raw.slice(1).split('?');
+            const route = hashPart || 'home';
+            const params = {};
+            if (queryPart) {
+                const qs = new URLSearchParams(queryPart);
+                if (qs.get('q')) params.query = qs.get('q');
+                if (qs.get('filter')) params.filter = qs.get('filter');
+                if (qs.get('id')) params.id = qs.get('id');
+            }
+            return { route, params };
+        }
+
         // --- Core Functions ---
         function navigate(route, params = {}) {
             AppState.currentRoute = route;
             AppState.routeParams = params;
             
+            // Update URL hash without triggering hashchange re-render
+            const newHash = buildHash(route, params);
+            history.pushState({ route, params }, '', newHash);
+
             // Update UI Nav links
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             const activeLink = Array.from(document.querySelectorAll('.nav-link')).find(l => l.textContent.toLowerCase().includes(route.toLowerCase()) && route !== 'home');
@@ -382,9 +470,16 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
 
             renderApp();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // History API could be implemented here for real browser back/forward
         }
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', function(event) {
+            const { route, params } = event.state || parseHash();
+            AppState.currentRoute = route;
+            AppState.routeParams = params;
+            renderApp();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
 
         // Setup Search Listener
         document.getElementById('global-search').addEventListener('keypress', function(e) {
@@ -393,17 +488,54 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
             }
         });
 
-        marked.setOptions({
-            breaks: true,
-            gfm: true,
-            highlight: function(code, lang) {
-                if (Prism.languages[lang]) {
-                    return Prism.highlight(code, Prism.languages[lang], lang);
-                } else {
-                    return code;
-                }
+        // Mobile search listener
+        document.getElementById('mobile-search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                closeMobileMenu();
+                navigate('explore', { query: this.value });
             }
         });
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+
+        function closeMobileMenu() {
+            document.getElementById('mobile-menu').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
+        document.getElementById('mobile-menu-backdrop').addEventListener('click', closeMobileMenu);
+
+        marked.use({
+            breaks: true,
+            gfm: true,
+            renderer: (function() {
+                const renderer = new marked.Renderer();
+                renderer.code = function(code, lang) {
+                    const language = lang && Prism.languages[lang] ? lang : 'markup';
+                    const highlighted = Prism.languages[language]
+                        ? Prism.highlight(code, Prism.languages[language], language)
+                        : code;
+                    return `<pre class="language-${language}"><code class="language-${language}">${highlighted}</code></pre>`;
+                };
+                return renderer;
+            })()
+        });
+
+        function copyBibtex(btn, id, title, author, year) {
+            const bibtex = `@article{${id},\n  title={${title}},\n  author={${author} et al.},\n  journal={AIPubs.cloud},\n  year={${year}}\n}`;
+            navigator.clipboard.writeText(bibtex).then(function() {
+                btn.innerHTML = '<i class="ph ph-check text-green-600"></i>';
+                setTimeout(() => { btn.innerHTML = '<i class="ph ph-copy"></i>'; }, 2000);
+            }).catch(function() {
+                btn.innerHTML = '<i class="ph ph-warning text-red-500"></i>';
+                setTimeout(() => { btn.innerHTML = '<i class="ph ph-copy"></i>'; }, 2000);
+            });
+        }
 
         function applyPostRenderFormatting(elementId) {
             const el = document.getElementById(elementId);
@@ -689,7 +821,7 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                                     <div class="flex items-center justify-between mb-2">
                                         <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Cite as (BibTeX)</h3>
-                                        <button class="text-slate-500 hover:text-brand-600" title="Copy to clipboard" onclick="alert('Copied to clipboard!')"><i class="ph ph-copy"></i></button>
+                                        <button class="text-slate-500 hover:text-brand-600" title="Copy to clipboard" onclick="copyBibtex(this, '${paper.id}', '${paper.title.replace(/'/g, "\\'")}', '${paper.authors[0].name.replace(/'/g, "\\'")}', '${paper.date.split('-')[0]}')"><i class="ph ph-copy"></i></button>
                                     </div>
                                     <pre class="text-[10px] font-mono text-slate-600 overflow-x-auto">@article{${paper.id},
   title={${paper.title}},
@@ -943,12 +1075,18 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
 
         // Initialize application on load
         window.onload = function() {
+            // Dynamic copyright year
+            document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+            // Parse URL hash to restore route on direct link / page refresh
+            const { route, params } = parseHash();
+            AppState.currentRoute = route;
+            AppState.routeParams = params;
+
+            // Replace initial history entry with parsed state
+            history.replaceState({ route, params }, '', buildHash(route, params));
+
             renderApp();
-            
-            // Handle browser back/forward buttons if history API was fully implemented
-            // window.addEventListener('popstate', (event) => {
-            //    if(event.state) { AppState.currentRoute = event.state.route; ... renderApp(); }
-            // });
         };
 
     </script>

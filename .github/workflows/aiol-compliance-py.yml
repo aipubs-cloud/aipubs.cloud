@@ -1,0 +1,77 @@
+name: AIOL Compliance (Python)
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  aiol-py-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine changed files
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > changed_files.txt
+          else
+            git diff --name-only HEAD~1 HEAD > changed_files.txt || true
+          fi
+          cat changed_files.txt || true
+
+      - name: Required governance files exist
+        run: |
+          test -f .github/copilot-instructions.md
+          test -f .github/pull_request_template.md
+          test -f README.md
+
+      - name: PR body required fields
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "$PR_BODY" | grep -qi "Architecture summary" || exit 1
+          echo "$PR_BODY" | grep -qi "Contract/interface changes" || exit 1
+          echo "$PR_BODY" | grep -qi "Type and validation impact" || exit 1
+          echo "$PR_BODY" | grep -qi "Ethical/policy impact" || exit 1
+          echo "$PR_BODY" | grep -qi "Tests added/updated" || exit 1
+          echo "$PR_BODY" | grep -qi "Risk tier" || exit 1
+
+      - name: Detect AIOL Python files
+        id: aiol
+        run: |
+          grep -E '^(src|aiol|raip|raip-media)/.*\.py$|(^.*(kernel|kairos|contract|schema|policy).*\.py$)' changed_files.txt > aiol_py_changed.txt || true
+          if [[ -s aiol_py_changed.txt ]]; then
+            echo "aiol_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "aiol_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Python
+        if: steps.aiol.outputs.aiol_changed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tooling
+        if: steps.aiol.outputs.aiol_changed == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy
+
+      - name: Ruff check
+        if: steps.aiol.outputs.aiol_changed == 'true'
+        run: ruff check .
+
+      - name: Mypy check
+        if: steps.aiol.outputs.aiol_changed == 'true'
+        run: mypy raip || true

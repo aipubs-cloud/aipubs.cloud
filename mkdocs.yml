@@ -1,0 +1,20 @@
+site_name: InfoWeave Documentation
+site_description: Official InfoWeave documentation for AIPubs.cloud
+site_url: https://infoweave.aipubs.cloud
+
+repo_url: https://github.com/aipubs-cloud/aipubs.cloud
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: infoweave/index.md
+  - Getting Started: infoweave/getting-started.md
+  - Architecture: infoweave/architecture.md
+  - Governance: infoweave/governance.md
+  - Roadmap: infoweave/roadmap.md

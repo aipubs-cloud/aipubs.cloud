@@ -10,6 +10,14 @@ description: >
   Edges encode relationships such as uses, implements, depends_on, and derived_from.
   All extraction is plugin-driven; no extraction model is hardcoded.
 
+# Canonical ontology
+# Node types: Algorithm, Equation, Dataset, Model, Metric, Experiment,
+#   Hyperparameter, Claim, Conclusion, Variable, Function
+#   (plus lower-case legacy aliases for backward compatibility)
+# Edge types: USES, DERIVES_FROM, OPTIMIZES, VALIDATES, EVALUATES,
+#   IMPLEMENTS, GENERALIZES, PROVES
+#   (plus lower-case legacy aliases for backward compatibility)
+
 lifecycle:
   initial_state: idle
   states: [idle, building, built, failed]
@@ -34,7 +42,14 @@ outputs:
 
 events:
   - name: semantic_graph.created
-    payload_type: SemanticGraph
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.semantic
+      artifact_hash: "{{ sha256(semantic_graph) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: SemanticGraph
     description: Emitted when the semantic graph is ready
 
 interfaces:
@@ -45,9 +60,12 @@ interfaces:
   - name: IRelationExtractor
     contract: p2cs.semantic.IRelationExtractor
 
-capabilities:
-  - semantic.extract
-  - graph.build
+permissions:
+  filesystem:
+    read:
+      - generated/**
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: semantic_graph.created

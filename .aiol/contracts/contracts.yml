@@ -2,64 +2,95 @@
 # Enumerates all stable data contracts between P2CS pipeline stages.
 schema_version: "1.0.0"
 
+# Versioning policy:
+#   supported_versions — all schema versions a consumer MUST be able to read.
+#   preferred          — the version a producer SHOULD emit.
+#   deprecated_before  — versions below this value may be refused by consumers.
+versioning_policy:
+  supported_versions: ["1.0", "1.1"]
+  preferred: "1.1"
+  deprecated_before: "1.0"
+  negotiation: semver-minor  # consumers accept any version where major matches preferred
+
 contracts:
   - name: PublicationManifest
     schema: .aiol/schemas/publication-manifest.schema.json
     python_type: p2cs.contracts.PublicationManifest
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: discovery
     stage_consumed_by: [parser, semantic, provenance]
 
   - name: SemanticGraph
     schema: .aiol/schemas/semantic-graph.schema.json
     python_type: p2cs.contracts.SemanticGraph
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: semantic
     stage_consumed_by: [synthesis, experiments, provenance]
 
   - name: ComponentManifest
     schema: .aiol/schemas/component-manifest.schema.json
     python_type: p2cs.contracts.ComponentManifest
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: synthesis
     stage_consumed_by: [validation, experiments, registry, provenance]
 
   - name: ExperimentManifest
     schema: .aiol/schemas/experiment-manifest.schema.json
     python_type: p2cs.contracts.ExperimentManifest
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: experiments
     stage_consumed_by: [validation, benchmark, registry, provenance]
 
   - name: ProvenanceManifest
     schema: .aiol/schemas/provenance-manifest.schema.json
     python_type: p2cs.contracts.ProvenanceRecord
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: provenance
     stage_consumed_by: [registry, publish]
 
   - name: BenchmarkReport
     schema: .aiol/schemas/benchmark-report.schema.json
     python_type: p2cs.contracts.BenchmarkReport
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: benchmark
     stage_consumed_by: [validation, registry, provenance]
 
   - name: RegistryEntry
     schema: .aiol/schemas/registry-entry.schema.json
     python_type: p2cs.contracts.RegistryEntry
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: registry
     stage_consumed_by: [publish]
 
   - name: PluginDescriptor
     schema: .aiol/schemas/plugin-descriptor.schema.json
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: plugin_manifest
     stage_consumed_by: [all]
 
   - name: AIolModule
     schema: .aiol/schemas/aiol-module.schema.json
-    version: "1.0.0"
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
     stage_produced_by: module_manifest
     stage_consumed_by: [all]
+
+  - name: EventEnvelope
+    schema: .aiol/schemas/event-envelope.schema.json
+    python_type: p2cs.contracts.EventEnvelope
+    supported_versions: ["1.0", "1.1"]
+    preferred: "1.1"
+    stage_produced_by: all
+    stage_consumed_by: [all]
+    description: >
+      Standardised wrapper for every inter-stage event.
+      Provides id, timestamp, producer, artifact_hash, parent_hash,
+      provenance reference, and an opaque payload. Enables full replay.

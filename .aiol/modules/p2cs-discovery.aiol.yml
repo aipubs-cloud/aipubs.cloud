@@ -42,10 +42,24 @@ outputs:
 
 events:
   - name: publication.discovered
-    payload_type: PublicationManifest
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.discovery
+      artifact_hash: "{{ sha256(publication_manifest) }}"
+      parent_hash: null
+      provenance: null
+      payload_type: PublicationManifest
     description: Emitted once per discovered publication
   - name: discovery.completed
-    payload_type: DiscoveryReport
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.discovery
+      artifact_hash: "{{ sha256(discovery_report) }}"
+      parent_hash: null
+      provenance: null
+      payload_type: DiscoveryReport
     description: Emitted when scan is complete
 
 interfaces:
@@ -54,9 +68,16 @@ interfaces:
   - name: IFormatDetector
     contract: p2cs.discovery.IFormatDetector
 
-capabilities:
-  - filesystem.read
-  - git.log
+permissions:
+  filesystem:
+    read:
+      - research/**
+      - docs/**
+      - publications/**
+  git:
+    read_history: true
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: publication.discovered

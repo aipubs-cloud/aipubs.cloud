@@ -29,7 +29,14 @@ outputs:
 
 events:
   - name: benchmark.completed
-    payload_type: BenchmarkReport
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.benchmark
+      artifact_hash: "{{ sha256(benchmark_report) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: BenchmarkReport
 
 interfaces:
   - name: IBenchmarkEngine
@@ -37,9 +44,14 @@ interfaces:
   - name: IMetricCollector
     contract: p2cs.benchmark.IMetricCollector
 
-capabilities:
-  - benchmark.execute
-  - metrics.collect
+permissions:
+  filesystem:
+    read:
+      - generated/**
+    write:
+      - generated/benchmarks/**
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: benchmark.completed

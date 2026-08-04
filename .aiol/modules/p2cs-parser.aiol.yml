@@ -31,7 +31,14 @@ outputs:
 
 events:
   - name: publication.parsed
-    payload_type: PublicationManifest
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.parser
+      artifact_hash: "{{ sha256(enriched_manifest) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: PublicationManifest
     description: Emitted when parsing completes successfully
 
 interfaces:
@@ -42,9 +49,14 @@ interfaces:
   - name: IAlgorithmExtractor
     contract: p2cs.parsing.IAlgorithmExtractor
 
-capabilities:
-  - filesystem.read
-  - text.parse
+permissions:
+  filesystem:
+    read:
+      - research/**
+      - docs/**
+      - publications/**
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: publication.parsed

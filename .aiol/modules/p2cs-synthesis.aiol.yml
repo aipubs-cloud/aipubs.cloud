@@ -41,9 +41,23 @@ outputs:
 
 events:
   - name: synthesis.requested
-    payload_type: SynthesisRequest
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.synthesis
+      artifact_hash: "{{ sha256(synthesis_request) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: SynthesisRequest
   - name: synthesis.completed
-    payload_type: "list[ComponentManifest]"
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.synthesis
+      artifact_hash: "{{ sha256(component_manifests) }}"
+      parent_hash: "{{ synthesis_requested_event_id }}"
+      provenance: null
+      payload_type: "list[ComponentManifest]"
 
 interfaces:
   - name: ISynthesisEngine
@@ -51,9 +65,12 @@ interfaces:
   - name: ILanguageAdapter
     contract: p2cs.synthesis.ILanguageAdapter
 
-capabilities:
-  - synthesis.generate
-  - filesystem.write
+permissions:
+  filesystem:
+    write:
+      - generated/components/**
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: synthesis.requested

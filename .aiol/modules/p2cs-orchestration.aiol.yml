@@ -1,0 +1,176 @@
+# AIOL Module Specification: PipelineOrchestrator
+# risk: medium
+schema_version: "1.0.0"
+module_id: p2cs.orchestration
+name: PipelineOrchestrator
+version: "0.1.0-alpha"
+description: >
+  Schedules and coordinates the full P2CS pipeline from Discovery through Publish.
+  Manages per-stage queues, routes EventEnvelope messages between stages, enforces
+  ordering constraints, retries failed stages, and provides a single observable
+  control plane for the pipeline. Compatible with GitHub Actions and Cloudflare Queues.
+
+# Orchestration model
+#   Each stage corresponds to one queue slot.
+#   The orchestrator dequeues the head event, dispatches it to the target stage,
+#   awaits the stage's output event, validates the EventEnvelope, and enqueues
+#   the result into the next stage's queue.
+#
+#   Queue topology:
+#     discovery_queue  → parser_queue  → semantic_queue  → synthesis_queue
+#                      → validation_queue → benchmark_queue → provenance_queue
+#                      → registry_queue   → publish_queue
+
+lifecycle:
+  initial_state: idle
+  states: [idle, scheduling, running, paused, completed, failed]
+  terminal_states: [completed, failed]
+  transitions:
+    - { from: idle,       to: scheduling, trigger: pipeline_triggered }
+    - { from: scheduling, to: running,    trigger: first_stage_started }
+    - { from: running,    to: paused,     trigger: pause_requested }
+    - { from: paused,     to: running,    trigger: resume_requested }
+    - { from: running,    to: completed,  trigger: all_stages_succeeded }
+    - { from: running,    to: failed,     trigger: stage_error_unrecoverable }
+    - { from: paused,     to: failed,     trigger: timeout_exceeded }
+
+inputs:
+  - name: pipeline_trigger
+    type: PipelineTrigger
+    required: true
+    description: Trigger event (push, schedule, manual dispatch, or queue message)
+  - name: pipeline_config
+    type: PipelineConfig
+    required: false
+    description: Runtime overrides for stage ordering, concurrency limits, and retry policy
+
+outputs:
+  - name: pipeline_report
+    type: PipelineReport
+    description: Aggregated status, per-stage durations, and artifact inventory
+
+events:
+  - name: pipeline.started
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.orchestration
+      artifact_hash: "{{ sha256(pipeline_trigger) }}"
+      parent_hash: null
+      provenance: null
+      payload_type: PipelineTrigger
+    description: Emitted when the orchestrator begins scheduling stages
+  - name: stage.dispatched
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.orchestration
+      artifact_hash: "{{ sha256(stage_envelope) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: StageDispatch
+    description: Emitted each time an event is forwarded to a stage queue
+  - name: pipeline.completed
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.orchestration
+      artifact_hash: "{{ sha256(pipeline_report) }}"
+      parent_hash: "{{ pipeline_started_event_id }}"
+      provenance: null
+      payload_type: PipelineReport
+    description: Emitted when all stages have succeeded
+  - name: pipeline.failed
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.orchestration
+      artifact_hash: "{{ sha256(pipeline_error) }}"
+      parent_hash: "{{ pipeline_started_event_id }}"
+      provenance: null
+      payload_type: PipelineError
+    description: Emitted when an unrecoverable stage error halts the pipeline
+
+interfaces:
+  - name: IPipelineOrchestrator
+    contract: p2cs.orchestration.IPipelineOrchestrator
+  - name: IStageQueue
+    contract: p2cs.orchestration.IStageQueue
+    description: Adapter interface for GitHub Actions queues or Cloudflare Queues
+  - name: IPipelineStage
+    contract: p2cs.orchestration.IPipelineStage
+
+permissions:
+  filesystem:
+    read:
+      - generated/**
+      - .aiol/**
+    write:
+      - generated/manifests/**
+  git:
+    read_history: true
+  network:
+    outbound: false
+
+plugin_interfaces:
+  - event: stage.dispatched
+    contract: p2cs.orchestration.IOrchestrationPlugin
+    description: >
+      Plugins can intercept stage dispatch events to inject tracing,
+      observability, or conditional routing logic.
+
+queues:
+  - name: discovery_queue
+    target_module: p2cs.discovery
+    max_concurrency: 4
+    retry_policy: { max_attempts: 3, backoff: exponential }
+  - name: parser_queue
+    target_module: p2cs.parser
+    max_concurrency: 4
+    retry_policy: { max_attempts: 3, backoff: exponential }
+  - name: semantic_queue
+    target_module: p2cs.semantic
+    max_concurrency: 2
+    retry_policy: { max_attempts: 2, backoff: linear }
+  - name: synthesis_queue
+    target_module: p2cs.synthesis
+    max_concurrency: 1
+    retry_policy: { max_attempts: 1, backoff: none }
+  - name: validation_queue
+    target_module: p2cs.validation
+    max_concurrency: 4
+    retry_policy: { max_attempts: 3, backoff: exponential }
+  - name: benchmark_queue
+    target_module: p2cs.benchmark
+    max_concurrency: 2
+    retry_policy: { max_attempts: 2, backoff: linear }
+  - name: provenance_queue
+    target_module: p2cs.provenance
+    max_concurrency: 4
+    retry_policy: { max_attempts: 3, backoff: exponential }
+  - name: registry_queue
+    target_module: p2cs.registry
+    max_concurrency: 2
+    retry_policy: { max_attempts: 3, backoff: exponential }
+  - name: publish_queue
+    target_module: p2cs.publish
+    max_concurrency: 1
+    retry_policy: { max_attempts: 1, backoff: none }
+
+dependencies:
+  - module_id: p2cs.discovery
+    version: ">=0.1.0"
+  - module_id: p2cs.parser
+    version: ">=0.1.0"
+  - module_id: p2cs.semantic
+    version: ">=0.1.0"
+  - module_id: p2cs.synthesis
+    version: ">=0.1.0"
+  - module_id: p2cs.validation
+    version: ">=0.1.0"
+  - module_id: p2cs.benchmark
+    version: ">=0.1.0"
+  - module_id: p2cs.provenance
+    version: ">=0.1.0"
+  - module_id: p2cs.registry
+    version: ">=0.1.0"

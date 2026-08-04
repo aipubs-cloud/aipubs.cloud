@@ -48,3 +48,8 @@ modules:
     spec: .aiol/modules/p2cs-benchmark.aiol.yml
     version: "0.1.0-alpha"
     status: alpha
+
+  - module_id: p2cs.orchestration
+    spec: .aiol/modules/p2cs-orchestration.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha

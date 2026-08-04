@@ -36,7 +36,14 @@ outputs:
 
 events:
   - name: provenance.attached
-    payload_type: ProvenanceManifest
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.provenance
+      artifact_hash: "{{ sha256(provenance_manifest) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: self
+      payload_type: ProvenanceManifest
 
 interfaces:
   - name: IProvenanceEngine
@@ -44,10 +51,17 @@ interfaces:
   - name: IIntegrityHasher
     contract: p2cs.provenance.IIntegrityHasher
 
-capabilities:
-  - provenance.attach
-  - crypto.hash
-  - raip.integrate
+permissions:
+  filesystem:
+    read:
+      - generated/**
+    write:
+      - generated/provenance/**
+  crypto:
+    hash: true
+    sign: false
+  network:
+    outbound: false
 
 plugin_interfaces: []
 

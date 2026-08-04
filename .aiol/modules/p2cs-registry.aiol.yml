@@ -32,7 +32,14 @@ outputs:
 
 events:
   - name: registry.updated
-    payload_type: RegistryEntry
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.registry
+      artifact_hash: "{{ sha256(registry_entry) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: "{{ provenance_manifest.artifact_id }}"
+      payload_type: RegistryEntry
 
 interfaces:
   - name: IRegistry
@@ -40,9 +47,14 @@ interfaces:
   - name: IRegistryStore
     contract: p2cs.registry.IRegistryStore
 
-capabilities:
-  - registry.read
-  - registry.write
+permissions:
+  filesystem:
+    read:
+      - generated/**
+    write:
+      - generated/registry/**
+  network:
+    outbound: false
 
 plugin_interfaces: []
 

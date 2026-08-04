@@ -29,7 +29,14 @@ outputs:
 
 events:
   - name: validation.completed
-    payload_type: ValidationReport
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.validation
+      artifact_hash: "{{ sha256(validation_report) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: ValidationReport
 
 interfaces:
   - name: IValidator
@@ -37,10 +44,12 @@ interfaces:
   - name: ISchemaValidator
     contract: p2cs.validation.ISchemaValidator
 
-capabilities:
-  - validation.schema
-  - validation.integrity
-  - test.run
+permissions:
+  filesystem:
+    read:
+      - generated/**
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: validation.completed

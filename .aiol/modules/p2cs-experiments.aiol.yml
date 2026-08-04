@@ -32,15 +32,25 @@ outputs:
 
 events:
   - name: experiment.generated
-    payload_type: ExperimentManifest
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.experiments
+      artifact_hash: "{{ sha256(experiment_manifest) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: ExperimentManifest
 
 interfaces:
   - name: IExperimentBuilder
     contract: p2cs.experiments.IExperimentBuilder
 
-capabilities:
-  - experiment.scaffold
-  - filesystem.write
+permissions:
+  filesystem:
+    write:
+      - generated/experiments/**
+  network:
+    outbound: false
 
 plugin_interfaces:
   - event: experiment.generated

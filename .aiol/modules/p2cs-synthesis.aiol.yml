@@ -45,10 +45,10 @@ events:
       id: "{{ uuid4() }}"
       timestamp: "{{ iso8601_utc() }}"
       producer: p2cs.synthesis
-      artifact_hash: "{{ sha256(synthesis_request) }}"
+      artifact_hash: "{{ sha256(semantic_graph) }}"
       parent_hash: "{{ parent_event_id }}"
       provenance: null
-      payload_type: SynthesisRequest
+      payload_type: SemanticGraph
   - name: synthesis.completed
     envelope:
       id: "{{ uuid4() }}"

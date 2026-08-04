@@ -21,19 +21,23 @@ SCHEMAS_DIR = Path(__file__).parent.parent.parent / ".aiol" / "schemas"
 SCHEMA_FILES = list(SCHEMAS_DIR.glob("*.schema.json")) if SCHEMAS_DIR.exists() else []
 
 
-def test_schema_files_present():
-    assert SCHEMAS_DIR.exists(), f"Missing schemas dir: {SCHEMAS_DIR}"
-    assert SCHEMA_FILES, "No *.schema.json files found in .aiol/schemas"
+def test_schemas_directory_is_non_empty():
+    """Fail fast if the schemas directory is missing or empty."""
+    assert SCHEMAS_DIR.exists(), f"Schemas directory not found: {SCHEMAS_DIR}"
+    assert len(SCHEMA_FILES) > 0, f"No *.schema.json files found in {SCHEMAS_DIR}"
 
 
 @pytest.mark.skipif(not HAS_JSONSCHEMA, reason="jsonschema not installed")
 @pytest.mark.parametrize("schema_path", SCHEMA_FILES, ids=lambda p: p.name)
 def test_schema_is_valid_json(schema_path: Path):
+    from jsonschema import Draft7Validator
+
     data = json.loads(schema_path.read_text())
     jsonschema.Draft7Validator.check_schema(data)
     assert "$schema" in data
     assert "$id" in data
     assert "title" in data
+    Draft7Validator.check_schema(data)
 
 @pytest.mark.skipif(not HAS_JSONSCHEMA, reason="jsonschema not installed")
 def test_publication_manifest_sample():

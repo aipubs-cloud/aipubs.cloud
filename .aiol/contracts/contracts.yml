@@ -47,7 +47,6 @@ contracts:
 
   - name: ProvenanceManifest
     schema: .aiol/schemas/provenance-manifest.schema.json
-    python_type: p2cs.contracts.ProvenanceRecord
     supported_versions: ["1.0", "1.1"]
     preferred: "1.1"
     stage_produced_by: provenance

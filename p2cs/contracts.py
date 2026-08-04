@@ -187,7 +187,7 @@ class ComponentManifest:
     license: str = "Apache-2.0"
     interfaces: List[Dict[str, str]] = field(default_factory=list)
     dependencies: List[Dict[str, str]] = field(default_factory=list)
-    source_dir: str = ""
+    artifacts: Dict[str, str] = field(default_factory=dict)
     quality: Dict[str, Any] = field(default_factory=dict)
     provenance: Optional[ProvenanceRecord] = None
 

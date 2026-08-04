@@ -68,6 +68,10 @@ jobs:
 
           for sf in sorted(semantic_dir.glob("*.semantic.json")):
               graph = json.loads(sf.read_text())
+              confidence = float(graph.get("confidence", 1.0))
+              if confidence < threshold:
+                  print(f"  ⚠ Skipping {sf.name}: confidence {confidence} < threshold {threshold}")
+                  continue
               pub_id = graph.get("publication_id", sf.stem)
               for lang in ["python", "typescript"]:
                   comp_id = f"{pub_id}-{lang}-v0.1.0"
@@ -93,8 +97,8 @@ jobs:
                       "artifacts": {
                           "source_dir": str(comp_dir / "source"),
                           "tests_dir": str(comp_dir / "tests"),
-                          "examples_dir": str(comp_dir / "examples"),
                           "docs_dir": str(comp_dir / "docs"),
+                          "examples_dir": str(comp_dir / "examples"),
                       },
                       "quality": {},
                       "provenance": {

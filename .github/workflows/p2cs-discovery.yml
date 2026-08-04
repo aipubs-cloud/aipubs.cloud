@@ -49,7 +49,20 @@ jobs:
 
           scan_paths = ["publications", "research/papers"]
           supported_exts = {".md": "markdown", ".pdf": "pdf", ".html": "html", ".tex": "latex", ".docx": "docx"}
-          since_commit = os.environ.get("INPUT_SINCE_COMMIT", "")
+          since_commit = os.environ.get("INPUT_SINCE_COMMIT", "").strip()
+
+          if since_commit:
+              import subprocess
+              try:
+                  changed = subprocess.check_output(
+                      ["git", "diff", "--name-only", f"{since_commit}..HEAD"],
+                      text=True,
+                  ).splitlines()
+                  changed_set = set(changed)
+              except Exception:
+                  changed_set = None  # fall back to full scan on error
+          else:
+              changed_set = None
 
           changed_paths = None
           if since_commit:
@@ -68,6 +81,8 @@ jobs:
                   continue
               for f in sorted(p.rglob("*")):
                   if not f.is_file():
+                      continue
+                  if changed_set is not None and str(f) not in changed_set:
                       continue
                   ext = f.suffix.lower()
                   if ext not in supported_exts:

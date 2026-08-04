@@ -37,7 +37,6 @@ jobs:
         with:
           name: p2cs-components-${{ github.event.workflow_run.id || inputs.components_run_id }}
           path: generated/components/
-        continue-on-error: true
 
       - name: Validate component manifests
         run: |
@@ -47,8 +46,8 @@ jobs:
 
           schema_path = Path(".aiol/schemas/component-manifest.schema.json")
           if not schema_path.exists():
-              print("Schema not found — skipping")
-              sys.exit(0)
+              print("Schema not found — cannot validate")
+              sys.exit(1)
 
           try:
               import jsonschema
@@ -86,6 +85,7 @@ jobs:
               prov = data.get("provenance", {})
               stored_hash = prov.get("integrity_hash", "")
               if not stored_hash:
+                  errors.append(f"  ✗ {mf}: missing integrity_hash — artifact rejected")
                   continue
               # Recompute: hash the manifest with integrity_hash cleared
               prov_copy = {**prov, "integrity_hash": ""}

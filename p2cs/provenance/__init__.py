@@ -86,28 +86,33 @@ class DefaultProvenanceEngine(IProvenanceEngine):
             generated_at=datetime.now(tz=timezone.utc),
             repository_commit=context.repository_commit,
         )
+        digest = self._hasher.hash_json(self._to_serializable(artifact))
+        return ProvenanceRecord(
+            publication_id=record.publication_id,
+            publication_version=record.publication_version,
+            originating_section=record.originating_section,
+            source_hash=record.source_hash,
+            workflow_id=record.workflow_id,
+            workflow_version=record.workflow_version,
+            engine_id=record.engine_id,
+            aiol_module_version=record.aiol_module_version,
+            generated_at=record.generated_at,
+            repository_commit=record.repository_commit,
+            integrity_hash=digest,
+        )
+
+    @staticmethod
+    def _to_serializable(artifact: Any) -> Any:
         from dataclasses import asdict, is_dataclass
 
         if hasattr(artifact, "to_dict"):
-            payload = artifact.to_dict()
-        elif is_dataclass(artifact):
-            payload = asdict(artifact)
-        else:
-            payload = artifact
-
-        artifact_bytes = json.dumps(
-            payload,
-            sort_keys=True,
-            default=lambda o: o.isoformat() if isinstance(o, datetime) else str(o),
-        ).encode("utf-8")
-        return record.compute_integrity(artifact_bytes)
+            return artifact.to_dict()
+        if is_dataclass(artifact):
+            return asdict(artifact)
+        return artifact
 
     def verify(self, artifact: Any, record: ProvenanceRecord) -> bool:
         if not record.integrity_hash:
             return False
-        if hasattr(artifact, "to_dict"):
-            artifact_bytes = json.dumps(artifact.to_dict(), sort_keys=True).encode("utf-8")
-        else:
-            artifact_bytes = json.dumps(artifact, sort_keys=True).encode("utf-8")
-        expected = "sha256:" + hashlib.sha256(artifact_bytes).hexdigest()
-        return expected == record.integrity_hash
+        digest = self._hasher.hash_json(self._to_serializable(artifact))
+        return digest == record.integrity_hash

@@ -1,0 +1,85 @@
+name: P2CS Parse
+
+on:
+  workflow_run:
+    workflows: ["P2CS Discovery"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      manifests_run_id:
+        description: "Run ID of the P2CS Discovery workflow whose manifests to parse"
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  parse:
+    name: Parse Publications
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install jsonschema PyYAML
+
+      - name: Download manifests artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: p2cs-manifests-${{ github.event.workflow_run.id || inputs.manifests_run_id }}
+          path: generated/manifests/
+        continue-on-error: true
+
+      - name: Validate manifests against schema
+        run: |
+          python - << 'EOF'
+          import json, sys
+          from pathlib import Path
+
+          schema_path = Path(".aiol/schemas/publication-manifest.schema.json")
+          if not schema_path.exists():
+              print("Schema not found — skipping schema validation")
+              sys.exit(0)
+
+          try:
+              import jsonschema
+          except ImportError:
+              print("jsonschema not installed — skipping")
+              sys.exit(0)
+
+          schema = json.loads(schema_path.read_text())
+          manifests_dir = Path("generated/manifests")
+          errors = []
+          checked = 0
+
+          for mf in sorted(manifests_dir.glob("*.manifest.json")):
+              data = json.loads(mf.read_text())
+              try:
+                  jsonschema.validate(data, schema)
+                  checked += 1
+                  print(f"  ✓ {mf.name}")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"  ✗ {mf.name}: {e.message}")
+
+          if errors:
+              for err in errors:
+                  print(err)
+              sys.exit(1)
+          print(f"\nAll {checked} manifest(s) passed schema validation.")
+          EOF
+
+      - name: Upload parsed manifests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2cs-parsed-${{ github.run_id }}
+          path: generated/manifests/
+          retention-days: 30

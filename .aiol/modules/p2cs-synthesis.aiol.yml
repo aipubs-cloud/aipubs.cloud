@@ -1,0 +1,85 @@
+# AIOL Module Specification: ComponentSynthesizer
+# risk: high
+# Human review required before enabling automated commits of synthesized code.
+schema_version: "1.0.0"
+module_id: p2cs.synthesis
+name: ComponentSynthesizer
+version: "0.1.0-alpha"
+description: >
+  Generates language-targeted software components from the semantic graph.
+  Each synthesis engine is a plugin; no generation model is hardcoded.
+  Supports Python, Rust, TypeScript, Go, and C++ via dedicated engine plugins.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, planning, synthesizing, synthesized, failed]
+  terminal_states: [failed]
+  transitions:
+    - { from: idle,         to: planning,     trigger: synthesis_requested }
+    - { from: planning,     to: synthesizing, trigger: plan_accepted }
+    - { from: synthesizing, to: synthesized,  trigger: synthesis_succeeded }
+    - { from: synthesizing, to: failed,       trigger: synthesis_error }
+    - { from: planning,     to: failed,       trigger: plan_failed }
+
+inputs:
+  - name: semantic_graph
+    type: SemanticGraph
+    required: true
+  - name: language_targets
+    type: "list[str]"
+    required: false
+    description: "Languages to generate: python, rust, typescript, go, cpp"
+  - name: confidence_threshold
+    type: float
+    required: false
+    description: Minimum confidence score required to emit a synthesis
+
+outputs:
+  - name: component_manifests
+    type: "list[ComponentManifest]"
+    description: One manifest per generated component
+
+events:
+  - name: synthesis.requested
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.synthesis
+      artifact_hash: "{{ sha256(semantic_graph) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: SemanticGraph
+  - name: synthesis.completed
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.synthesis
+      artifact_hash: "{{ sha256(component_manifests) }}"
+      parent_hash: "{{ synthesis_requested_event_id }}"
+      provenance: null
+      payload_type: "list[ComponentManifest]"
+
+interfaces:
+  - name: ISynthesisEngine
+    contract: p2cs.synthesis.ISynthesisEngine
+  - name: ILanguageAdapter
+    contract: p2cs.synthesis.ILanguageAdapter
+
+permissions:
+  filesystem:
+    write:
+      - generated/components/**
+  network:
+    outbound: false
+
+plugin_interfaces:
+  - event: synthesis.requested
+    contract: p2cs.synthesis.ISynthesisPlugin
+    description: Engine plugins receive the semantic graph and emit component artifacts
+
+dependencies:
+  - module_id: p2cs.semantic
+    version: ">=0.1.0"
+  - module_id: p2cs.validation
+    version: ">=0.1.0"
+    optional: true

@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/provenance-manifest.schema.json",
+  "title": "P2CS Provenance Manifest",
+  "description": "Full provenance DAG for any P2CS-generated artifact, extending RAIP",
+  "type": "object",
+  "required": ["schema_version", "artifact_id", "artifact_type", "source_publication", "parent_artifacts", "transformation", "generator", "integrity"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "artifact_id": {
+      "type": "string",
+      "description": "Globally unique identifier for this artifact (UUID or content-addressed ID)"
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": ["component", "experiment", "semantic_graph", "benchmark_report", "prompt", "documentation", "registry_entry"]
+    },
+
+    "source_publication": {
+      "type": "object",
+      "description": "The originating publication this artifact was derived from",
+      "required": ["id", "version", "source_hash"],
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "originating_section": { "type": "string" },
+        "raip_envelope": { "type": "string" }
+      }
+    },
+
+    "parent_artifacts": {
+      "type": "array",
+      "description": "Upstream artifact IDs that directly produced or influenced this artifact (provenance DAG parents)",
+      "items": { "type": "string" }
+    },
+
+    "transformation": {
+      "type": "object",
+      "description": "Describes the operation that created this artifact from its parents",
+      "required": ["stage", "operation"],
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": ["discovery", "parser", "semantic", "synthesis", "experiments", "benchmark", "validation", "provenance", "registry"],
+          "description": "P2CS pipeline stage that performed the transformation"
+        },
+        "operation": {
+          "type": "string",
+          "description": "Named operation within the stage (e.g. 'graph_build', 'code_synthesis')"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Non-secret configuration parameters passed to the transformation",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "generator": {
+      "type": "object",
+      "description": "The engine, model, or tool that performed the synthesis",
+      "required": ["engine_id", "engine_version", "aiol_module_version", "workflow_id", "generated_at", "repository_commit"],
+      "properties": {
+        "engine_id": { "type": "string" },
+        "engine_version": { "type": "string" },
+        "aiol_module_version": { "type": "string" },
+        "workflow_id": { "type": "string" },
+        "workflow_version": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "repository_commit": { "type": "string" },
+        "run_id": { "type": "string" },
+        "model": {
+          "type": "object",
+          "description": "AI/ML model details when a model was involved in generation",
+          "properties": {
+            "name": { "type": "string" },
+            "version": { "type": "string" },
+            "provider": { "type": "string" },
+            "parameters": { "type": "object", "additionalProperties": true }
+          }
+        },
+        "prompt": {
+          "type": "object",
+          "description": "Prompt details when a generative model was invoked",
+          "properties": {
+            "template_id": { "type": "string" },
+            "template_version": { "type": "string" },
+            "prompt_hash": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "description": "SHA-256 of the rendered prompt (not the raw text, to avoid PII leakage)"
+            }
+          }
+        }
+      }
+    },
+
+    "integrity": {
+      "type": "object",
+      "description": "Hashes and optional cryptographic signatures for artifact verification",
+      "required": ["content_hash"],
+      "properties": {
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 of the artifact payload"
+        },
+        "verification": {
+          "type": "object",
+          "description": "Result of the most recent integrity check",
+          "properties": {
+            "verified_at": { "type": "string", "format": "date-time" },
+            "verified_by": { "type": "string", "description": "Stage or principal that performed verification" },
+            "passed": { "type": "boolean" }
+          }
+        },
+        "signature": {
+          "type": "string",
+          "description": "Optional Ed25519 signature over content_hash (base64-encoded)"
+        },
+        "public_key": {
+          "type": "string",
+          "description": "Base64-encoded Ed25519 public key corresponding to signature"
+        }
+      }
+    }
+  }
+}

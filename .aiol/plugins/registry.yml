@@ -1,0 +1,14 @@
+# P2CS Plugin Registry
+# Lists all registered plugins. Plugins are discovered from this file — no hardcoded imports.
+schema_version: "1.0.0"
+registry_version: "0.1.0-alpha"
+description: >
+  Registry of all P2CS plugins. Add a plugin by adding an entry here and placing
+  the plugin descriptor at the specified manifest_path.
+
+plugins: []
+
+# Example entry (uncomment and customise):
+# - plugin_id: my-org.my-extraction-engine
+#   manifest_path: .aiol/plugins/my-extraction-engine.plugin.json
+#   enabled: true

@@ -1,0 +1,125 @@
+name: P2CS Analysis
+
+on:
+  workflow_run:
+    workflows: ["P2CS Parse"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      parsed_run_id:
+        description: "Run ID of the P2CS Parse workflow"
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  analyze:
+    name: Build Semantic Graphs
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install jsonschema PyYAML
+
+      - name: Download parsed manifests
+        uses: actions/download-artifact@v4
+        with:
+          name: p2cs-parsed-${{ github.event.workflow_run.id || inputs.parsed_run_id }}
+          path: generated/manifests/
+        continue-on-error: true
+
+      - name: Generate skeleton semantic graphs
+        run: |
+          python - << 'EOF'
+          # Skeleton semantic graph builder — output structure only.
+          # Replace with a plugin-driven engine in a future phase.
+          import json, hashlib
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          manifests_dir = Path("generated/manifests")
+          semantic_dir = Path("generated/semantic")
+          semantic_dir.mkdir(parents=True, exist_ok=True)
+
+          commit = "unknown"
+          import subprocess
+          try:
+              commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          except Exception:
+              pass
+
+          for mf in sorted(manifests_dir.glob("*.manifest.json")):
+              pub = json.loads(mf.read_text())
+              pub_id = pub.get("publication_id", mf.stem)
+              graph = {
+                  "schema_version": "1.0.0",
+                  "publication_id": pub_id,
+                  "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+                  "nodes": [],
+                  "edges": [],
+                  "provenance": {
+                      "publication_id": pub_id,
+                      "publication_version": pub.get("schema_version", "1.0.0"),
+                      "source_hash": pub.get("source_hash", ""),
+                      "workflow_id": "p2cs-analysis",
+                      "workflow_version": "0.1.0-alpha",
+                      "engine_id": "skeleton",
+                      "aiol_module_version": "0.1.0-alpha",
+                      "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+                      "repository_commit": commit,
+                      "integrity_hash": "",
+                  },
+              }
+              out = semantic_dir / f"{pub_id}.semantic.json"
+              content = json.dumps(graph, indent=2)
+              graph["provenance"]["integrity_hash"] = (
+                  "sha256:" + hashlib.sha256(content.encode()).hexdigest()
+              )
+              out.write_text(json.dumps(graph, indent=2))
+              print(f"  ✓ {out.name}")
+          EOF
+
+      - name: Validate semantic graphs
+        run: |
+          python - << 'EOF'
+          import json, sys
+          from pathlib import Path
+          schema_path = Path(".aiol/schemas/semantic-graph.schema.json")
+          if not schema_path.exists():
+              print("Schema not found — skipping")
+              sys.exit(0)
+          try:
+              import jsonschema
+          except ImportError:
+              sys.exit(0)
+          schema = json.loads(schema_path.read_text())
+          errors = []
+          for f in Path("generated/semantic").glob("*.semantic.json"):
+              try:
+                  jsonschema.validate(json.loads(f.read_text()), schema)
+                  print(f"  ✓ {f.name}")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"  ✗ {f.name}: {e.message}")
+          if errors:
+              for err in errors:
+                  print(err)
+              sys.exit(1)
+          EOF
+
+      - name: Upload semantic graphs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2cs-semantic-${{ github.run_id }}
+          path: generated/semantic/
+          retention-days: 30

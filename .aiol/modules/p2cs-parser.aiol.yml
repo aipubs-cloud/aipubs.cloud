@@ -1,0 +1,68 @@
+# AIOL Module Specification: Parser
+# risk: low
+schema_version: "1.0.0"
+module_id: p2cs.parser
+name: PublicationParser
+version: "0.1.0-alpha"
+description: >
+  Parses publications in supported formats and extracts structured metadata:
+  title, authors, abstract, sections, equations, algorithms, figures, references.
+  Produces a fully-populated PublicationManifest for semantic analysis.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, parsing, parsed, failed]
+  terminal_states: [failed]
+  transitions:
+    - { from: idle,    to: parsing, trigger: parse_requested }
+    - { from: parsing, to: parsed,  trigger: parse_succeeded }
+    - { from: parsing, to: failed,  trigger: parse_error }
+
+inputs:
+  - name: publication_manifest
+    type: PublicationManifest
+    required: true
+    description: Manifest from the Discovery stage (source_path and source_format populated)
+
+outputs:
+  - name: enriched_manifest
+    type: PublicationManifest
+    description: Manifest with all extracted sections, equations, algorithms, etc.
+
+events:
+  - name: publication.parsed
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.parser
+      artifact_hash: "{{ sha256(enriched_manifest) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: PublicationManifest
+    description: Emitted when parsing completes successfully
+
+interfaces:
+  - name: IPublicationParser
+    contract: p2cs.parsing.IPublicationParser
+  - name: IEquationExtractor
+    contract: p2cs.parsing.IEquationExtractor
+  - name: IAlgorithmExtractor
+    contract: p2cs.parsing.IAlgorithmExtractor
+
+permissions:
+  filesystem:
+    read:
+      - research/**
+      - docs/**
+      - publications/**
+  network:
+    outbound: false
+
+plugin_interfaces:
+  - event: publication.parsed
+    contract: p2cs.parsing.IParserPlugin
+    description: Plugins can enrich or override parsed content
+
+dependencies:
+  - module_id: p2cs.discovery
+    version: ">=0.1.0"

@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/experiment-manifest.schema.json",
+  "title": "P2CS Experiment Manifest",
+  "description": "Manifest for a generated reproducible experiment artifact",
+  "type": "object",
+  "required": ["schema_version", "experiment_id", "name", "version", "type", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "experiment_id": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "type": { "type": "string", "enum": ["reproduction", "benchmark", "ablation", "baseline_comparison", "visualization", "other"] },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "entrypoint": { "type": "string" },
+        "runtime": { "type": "string" },
+        "runtime_version": { "type": "string" },
+        "environment": { "type": "object", "additionalProperties": { "type": "string" } },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory_gb": { "type": "number" },
+            "gpu": { "type": "string" }
+          }
+        },
+        "estimated_duration_seconds": { "type": "integer" }
+      }
+    },
+    "expected_outputs": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "type"], "properties": { "name": { "type": "string" }, "type": { "type": "string" }, "description": { "type": "string" } } }
+    },
+    "reproducibility": {
+      "type": "object",
+      "properties": {
+        "random_seed": { "type": "integer" },
+        "deterministic": { "type": "boolean" },
+        "docker_image": { "type": "string" },
+        "devcontainer": { "type": "string" },
+        "nix_flake": { "type": "string" }
+      }
+    },
+    "benchmark_hooks": {
+      "type": "array",
+      "items": { "type": "object", "required": ["hook", "metric"], "properties": { "hook": { "type": "string" }, "metric": { "type": "string" }, "unit": { "type": "string" } } }
+    },
+    "related_components": { "type": "array", "items": { "type": "string" } },
+    "datasets": { "type": "array", "items": { "type": "string" } },
+    "provenance": {
+      "type": "object",
+      "required": ["publication_id", "publication_version", "workflow_id", "workflow_version", "engine_id", "aiol_module_version", "generated_at", "repository_commit", "integrity_hash"],
+      "properties": {
+        "publication_id": { "type": "string" },
+        "publication_version": { "type": "string" },
+        "originating_section": { "type": "string" },
+        "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "workflow_id": { "type": "string" },
+        "workflow_version": { "type": "string" },
+        "engine_id": { "type": "string" },
+        "aiol_module_version": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "repository_commit": { "type": "string" },
+        "integrity_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

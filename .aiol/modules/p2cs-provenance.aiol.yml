@@ -1,0 +1,71 @@
+# AIOL Module Specification: ProvenanceEngine
+# risk: low
+schema_version: "1.0.0"
+module_id: p2cs.provenance
+name: ProvenanceEngine
+version: "0.1.0-alpha"
+description: >
+  Attaches and verifies RAIP-compatible provenance to every P2CS artifact.
+  Extends RAIP rather than duplicating it. Every generated artifact receives
+  a full provenance chain linking it back to its originating publication.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, attaching, attached, verified, failed]
+  terminal_states: [attached, verified, failed]
+  transitions:
+    - { from: idle,      to: attaching, trigger: provenance_requested }
+    - { from: attaching, to: attached,  trigger: provenance_attached }
+    - { from: attached,  to: verified,  trigger: integrity_verified }
+    - { from: attaching, to: failed,    trigger: provenance_error }
+
+inputs:
+  - name: artifact
+    type: "ComponentManifest | ExperimentManifest | SemanticGraph | BenchmarkReport"
+    required: true
+  - name: publication_manifest
+    type: PublicationManifest
+    required: true
+  - name: workflow_context
+    type: WorkflowContext
+    required: true
+
+outputs:
+  - name: provenance_manifest
+    type: ProvenanceManifest
+
+events:
+  - name: provenance.attached
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.provenance
+      artifact_hash: "{{ sha256(provenance_manifest) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: self
+      payload_type: ProvenanceManifest
+
+interfaces:
+  - name: IProvenanceEngine
+    contract: p2cs.provenance.IProvenanceEngine
+  - name: IIntegrityHasher
+    contract: p2cs.provenance.IIntegrityHasher
+
+permissions:
+  filesystem:
+    read:
+      - generated/**
+    write:
+      - generated/provenance/**
+  crypto:
+    hash: true
+    sign: false
+  network:
+    outbound: false
+
+plugin_interfaces: []
+
+dependencies:
+  - module_id: p2cs.validation
+    version: ">=0.1.0"
+    optional: true

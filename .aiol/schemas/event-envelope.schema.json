@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/event-envelope.schema.json",
+  "title": "P2CS Event Envelope",
+  "description": "Standardised wrapper for every inter-stage P2CS event. Provides identity, timing, provenance linkage, and a typed payload. Every event wrapped in this envelope is fully replayable.",
+  "type": "object",
+  "required": ["schema_version", "id", "timestamp", "producer", "artifact_hash", "payload_type", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique event identifier (UUID v4)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of event emission"
+    },
+    "producer": {
+      "type": "string",
+      "description": "AIOL module ID of the stage that emitted this event (e.g. p2cs.discovery)"
+    },
+    "artifact_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of the serialised payload, enabling replay integrity checks"
+    },
+    "parent_hash": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "artifact_hash of the upstream event that triggered this one; null for root events"
+    },
+    "parent_event_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "id of the upstream event that triggered this one; null for root events"
+    },
+    "provenance": {
+      "type": ["string", "null"],
+      "description": "Artifact ID of the ProvenanceManifest associated with this event's payload; null until provenance stage runs"
+    },
+    "payload_type": {
+      "type": "string",
+      "description": "Fully qualified contract type name of the payload (e.g. PublicationManifest)"
+    },
+    "payload": {
+      "type": "object",
+      "description": "The event payload; must conform to the schema identified by payload_type",
+      "additionalProperties": true
+    }
+  }
+}

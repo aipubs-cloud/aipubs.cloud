@@ -1,0 +1,143 @@
+name: P2CS Publish
+
+on:
+  workflow_run:
+    workflows: ["P2CS Validation"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      validation_run_id:
+        description: "Run ID of the P2CS Validation workflow"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  publish:
+    name: Publish Artifacts and Update Registry
+    runs-on: ubuntu-latest
+    # risk: high — opens a PR for human review before any generated code is merged.
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install jsonschema PyYAML
+
+      - name: Download validated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: p2cs-validation-${{ github.event.workflow_run.id || inputs.validation_run_id }}
+          path: generated/
+        continue-on-error: true
+
+      - name: Update component registry
+        run: |
+          python - << 'EOF'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          registry = []
+          commit = "unknown"
+          import subprocess
+          try:
+              commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          except Exception:
+              pass
+
+          for mf in sorted(Path("generated/components").rglob("component.manifest.json")):
+              data = json.loads(mf.read_text())
+              entry = {
+                  "schema_version": "1.0.0",
+                  "entry_id": data.get("component_id", ""),
+                  "type": "library",
+                  "name": data.get("name", ""),
+                  "version": data.get("version", ""),
+                  "language_targets": [data.get("language", "")],
+                  "path": str(mf.parent),
+                  "manifest_path": str(mf),
+                  "status": "experimental",
+                  "provenance": data.get("provenance", {}),
+              }
+              registry.append(entry)
+
+          out = Path("generated/manifests/registry.json")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps({"entries": registry, "updated_at": datetime.now(tz=timezone.utc).isoformat()}, indent=2))
+          print(f"Registry updated: {len(registry)} entries")
+          EOF
+
+      - name: Emit workflow metadata
+        run: |
+          python - << 'EOF'
+          import json, os
+          from datetime import datetime, timezone
+          meta = {
+              "workflow": "p2cs-publish",
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "repository": os.environ.get("GITHUB_REPOSITORY", ""),
+              "ref": os.environ.get("GITHUB_REF", ""),
+              "completed_at": datetime.now(tz=timezone.utc).isoformat(),
+          }
+          from pathlib import Path
+          out = Path("generated/manifests/publish-metadata.json")
+          out.write_text(json.dumps(meta, indent=2))
+          print(json.dumps(meta, indent=2))
+          EOF
+
+      - name: Upload final registry artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2cs-registry-${{ github.run_id }}
+          path: generated/manifests/
+          retention-days: 90
+
+      - name: Open review PR for generated artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH="p2cs/generated-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          git add generated/
+          if git diff --cached --quiet; then
+            echo "No generated artifact changes to commit."
+            exit 0
+          fi
+          git commit -m "feat(p2cs): update generated artifacts [run $GITHUB_RUN_ID]"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "feat(p2cs): Generated artifacts from run $GITHUB_RUN_ID" \
+            --body "## P2CS Auto-generated Artifacts
+
+          This PR was opened automatically by the P2CS Publish workflow.
+          **All generated artifacts must be reviewed by a human before merge.**
+
+          ### Contents
+          - Updated component scaffolds
+          - Registry index
+          - Provenance manifests
+
+          ### Risk
+          - [ ] Human review completed
+          - [ ] Provenance chain verified
+          - [ ] No secrets in generated code
+
+          risk: high" \
+            --draft \
+            --label "p2cs" \
+            --base main || true

@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/plugin-descriptor.schema.json",
+  "title": "P2CS Plugin Descriptor",
+  "description": "Manifest describing a P2CS plugin ABI, lifecycle hooks, permissions, compatibility, and security policy",
+  "type": "object",
+  "required": ["schema_version", "plugin_id", "name", "version", "hooks", "metadata", "compatibility", "security_policy"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "plugin_id": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$" },
+    "description": { "type": "string" },
+
+    "metadata": {
+      "type": "object",
+      "description": "Human-readable and operational metadata",
+      "required": ["author", "license", "language", "entrypoint"],
+      "properties": {
+        "author": { "type": "string" },
+        "license": { "type": "string" },
+        "language": { "type": "string" },
+        "entrypoint": { "type": "string", "description": "Command or module path to invoke the plugin" },
+        "homepage": { "type": "string", "format": "uri" },
+        "repository": { "type": "string", "format": "uri" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "compatibility": {
+      "type": "object",
+      "description": "Declares which AIOL and P2CS versions this plugin supports",
+      "required": ["aiol_module_versions", "p2cs_versions", "abi_version"],
+      "properties": {
+        "aiol_module_versions": {
+          "type": "array",
+          "description": "Semver range expressions for compatible AIOL module versions",
+          "items": { "type": "string" }
+        },
+        "p2cs_versions": {
+          "type": "array",
+          "description": "Semver range expressions for compatible P2CS versions",
+          "items": { "type": "string" }
+        },
+        "abi_version": {
+          "type": "string",
+          "description": "Plugin ABI version this plugin targets",
+          "pattern": "^\\d+\\.\\d+$"
+        },
+        "breaking_change_in": {
+          "type": "string",
+          "description": "ABI version where a breaking change was introduced (if any)"
+        }
+      }
+    },
+
+    "hooks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["event", "handler"],
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "publication.discovered",
+              "publication.parsed",
+              "semantic_graph.created",
+              "synthesis.requested",
+              "synthesis.completed",
+              "experiment.generated",
+              "validation.completed",
+              "benchmark.completed",
+              "provenance.attached",
+              "registry.updated",
+              "artifact.published"
+            ]
+          },
+          "handler": { "type": "string", "description": "Handler function or endpoint" },
+          "priority": { "type": "integer", "minimum": 0, "maximum": 100, "default": 50 },
+          "async": { "type": "boolean", "default": false },
+          "timeout_seconds": { "type": "integer", "minimum": 1, "maximum": 3600, "default": 60 },
+          "retry_policy": {
+            "type": "object",
+            "properties": {
+              "max_attempts": { "type": "integer", "minimum": 1, "maximum": 10 },
+              "backoff": { "type": "string", "enum": ["none", "linear", "exponential"] }
+            }
+          }
+        }
+      }
+    },
+
+    "permissions": {
+      "type": "object",
+      "description": "Declarative sandbox permissions required by this plugin",
+      "properties": {
+        "filesystem": {
+          "type": "object",
+          "properties": {
+            "read": { "type": "array", "items": { "type": "string" } },
+            "write": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "git": {
+          "type": "object",
+          "properties": {
+            "read_history": { "type": "boolean", "default": false }
+          }
+        },
+        "network": {
+          "type": "object",
+          "properties": {
+            "outbound": { "type": "boolean", "default": false },
+            "allowed_hosts": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "crypto": {
+          "type": "object",
+          "properties": {
+            "hash": { "type": "boolean", "default": false },
+            "sign": { "type": "boolean", "default": false }
+          }
+        }
+      }
+    },
+
+    "security_policy": {
+      "type": "object",
+      "description": "Governance and misuse boundary declarations for this plugin",
+      "required": ["risk_tier", "human_review_required"],
+      "properties": {
+        "risk_tier": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "AIOL risk annotation for this plugin"
+        },
+        "human_review_required": {
+          "type": "boolean",
+          "description": "If true, any artifact produced must pass a human-approval gate before merging"
+        },
+        "pii_access": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this plugin may process PII; if true, audit logging is mandatory"
+        },
+        "audit_log": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether all invocations must be written to the audit log"
+        },
+        "allowed_callers": {
+          "type": "array",
+          "description": "Pipeline stage IDs permitted to invoke this plugin; empty means all stages",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "configuration_schema": {
+      "type": "object",
+      "description": "JSON Schema for plugin-specific runtime configuration",
+      "additionalProperties": true
+    },
+
+    "dependencies": {
+      "type": "array",
+      "description": "Other P2CS plugins this plugin depends on",
+      "items": {
+        "type": "object",
+        "required": ["plugin_id", "version"],
+        "properties": {
+          "plugin_id": { "type": "string" },
+          "version": { "type": "string", "description": "Semver range expression" },
+          "optional": { "type": "boolean", "default": false }
+        }
+      }
+    }
+  }
+}

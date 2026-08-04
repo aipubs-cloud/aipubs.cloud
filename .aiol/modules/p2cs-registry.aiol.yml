@@ -1,0 +1,63 @@
+# AIOL Module Specification: Registry
+# risk: low
+schema_version: "1.0.0"
+module_id: p2cs.registry
+name: ComponentRegistry
+version: "0.1.0-alpha"
+description: >
+  Canonical index of all P2CS-generated artifacts including libraries, AIOL modules,
+  experiments, datasets, benchmarks, and documentation. Tracks semantic versions,
+  dependency relationships, and provenance references.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, indexing, indexed, failed]
+  terminal_states: [failed]
+  transitions:
+    - { from: idle,     to: indexing, trigger: register_requested }
+    - { from: indexing, to: indexed,  trigger: register_succeeded }
+    - { from: indexing, to: failed,   trigger: register_error }
+
+inputs:
+  - name: artifact_manifest
+    type: "ComponentManifest | ExperimentManifest | BenchmarkReport"
+    required: true
+  - name: provenance_manifest
+    type: ProvenanceManifest
+    required: true
+
+outputs:
+  - name: registry_entry
+    type: RegistryEntry
+
+events:
+  - name: registry.updated
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.registry
+      artifact_hash: "{{ sha256(registry_entry) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: "{{ provenance_manifest.artifact_id }}"
+      payload_type: RegistryEntry
+
+interfaces:
+  - name: IRegistry
+    contract: p2cs.registry.IRegistry
+  - name: IRegistryStore
+    contract: p2cs.registry.IRegistryStore
+
+permissions:
+  filesystem:
+    read:
+      - generated/**
+    write:
+      - generated/registry/**
+  network:
+    outbound: false
+
+plugin_interfaces: []
+
+dependencies:
+  - module_id: p2cs.provenance
+    version: ">=0.1.0"

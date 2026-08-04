@@ -1,0 +1,58 @@
+# AIOL Module Specification: Validator
+# risk: low
+schema_version: "1.0.0"
+module_id: p2cs.validation
+name: Validator
+version: "0.1.0-alpha"
+description: >
+  Validates all P2CS artifacts against their JSON schemas and integrity hashes.
+  Runs language-specific lint, type-check, and test suites for generated components.
+  Validates experiment reproducibility metadata.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, validating, passed, failed]
+  terminal_states: [passed, failed]
+  transitions:
+    - { from: idle,       to: validating, trigger: validation_requested }
+    - { from: validating, to: passed,     trigger: all_checks_passed }
+    - { from: validating, to: failed,     trigger: check_failed }
+
+inputs:
+  - name: artifact
+    type: "ComponentManifest | ExperimentManifest | SemanticGraph"
+    required: true
+
+outputs:
+  - name: validation_report
+    type: ValidationReport
+
+events:
+  - name: validation.completed
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.validation
+      artifact_hash: "{{ sha256(validation_report) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: ValidationReport
+
+interfaces:
+  - name: IValidator
+    contract: p2cs.validation.IValidator
+  - name: ISchemaValidator
+    contract: p2cs.validation.ISchemaValidator
+
+permissions:
+  filesystem:
+    read:
+      - generated/**
+  network:
+    outbound: false
+
+plugin_interfaces:
+  - event: validation.completed
+    contract: p2cs.validation.IValidationPlugin
+
+dependencies: []

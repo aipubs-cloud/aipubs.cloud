@@ -1,0 +1,77 @@
+# AIOL Module Specification: SemanticGraph
+# risk: medium
+schema_version: "1.0.0"
+module_id: p2cs.semantic
+name: SemanticGraphBuilder
+version: "0.1.0-alpha"
+description: >
+  Constructs a typed knowledge graph from parsed publication content.
+  Nodes represent concepts, methods, algorithms, variables, and datasets.
+  Edges encode relationships such as uses, implements, depends_on, and derived_from.
+  All extraction is plugin-driven; no extraction model is hardcoded.
+
+# Canonical ontology
+# Node types: Algorithm, Equation, Dataset, Model, Metric, Experiment,
+#   Hyperparameter, Claim, Conclusion, Variable, Function
+#   (plus lower-case legacy aliases for backward compatibility)
+# Edge types: USES, DERIVES_FROM, OPTIMIZES, VALIDATES, EVALUATES,
+#   IMPLEMENTS, GENERALIZES, PROVES
+#   (plus lower-case legacy aliases for backward compatibility)
+
+lifecycle:
+  initial_state: idle
+  states: [idle, building, built, failed]
+  terminal_states: [failed]
+  transitions:
+    - { from: idle,     to: building, trigger: build_requested }
+    - { from: building, to: built,    trigger: build_succeeded }
+    - { from: building, to: failed,   trigger: build_error }
+
+inputs:
+  - name: enriched_manifest
+    type: PublicationManifest
+    required: true
+  - name: plugin_config
+    type: SemanticPluginConfig
+    required: false
+
+outputs:
+  - name: semantic_graph
+    type: SemanticGraph
+    description: Typed knowledge graph with provenance annotations
+
+events:
+  - name: semantic_graph.created
+    envelope:
+      id: "{{ uuid4() }}"
+      timestamp: "{{ iso8601_utc() }}"
+      producer: p2cs.semantic
+      artifact_hash: "{{ sha256(semantic_graph) }}"
+      parent_hash: "{{ parent_event_id }}"
+      provenance: null
+      payload_type: SemanticGraph
+    description: Emitted when the semantic graph is ready
+
+interfaces:
+  - name: ISemanticGraphBuilder
+    contract: p2cs.semantic.ISemanticGraphBuilder
+  - name: INodeExtractor
+    contract: p2cs.semantic.INodeExtractor
+  - name: IRelationExtractor
+    contract: p2cs.semantic.IRelationExtractor
+
+permissions:
+  filesystem:
+    read:
+      - generated/**
+  network:
+    outbound: false
+
+plugin_interfaces:
+  - event: semantic_graph.created
+    contract: p2cs.semantic.ISemanticPlugin
+    description: Plugins can augment or validate the graph
+
+dependencies:
+  - module_id: p2cs.parser
+    version: ">=0.1.0"

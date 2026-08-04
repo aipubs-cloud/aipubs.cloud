@@ -81,7 +81,7 @@
     },
     "provenance": {
       "type": "object",
-      "required": ["publication_id", "publication_version", "workflow_id", "workflow_version", "engine_id", "aiol_module_version", "generated_at", "repository_commit", "integrity_hash"],
+      "required": ["publication_id", "publication_version", "source_hash", "workflow_id", "workflow_version", "engine_id", "aiol_module_version", "generated_at", "repository_commit", "integrity_hash"],
       "properties": {
         "publication_id": { "type": "string" },
         "publication_version": { "type": "string" },

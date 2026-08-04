@@ -88,6 +88,8 @@ Publishing on AIPubs uses a Git-backed workflow:
 5. **Submit a pull request** — your paper enters open peer review
 6. **RAIP envelope** is generated automatically upon merge
 
+For local registrar-style uploads, use the root-level [aipubs-upload.sh](aipubs-upload.sh) script. It validates a publication folder with `README.md` and `publication.json`, computes a RAIP-style fingerprint, writes `.raip/envelope.json`, stages the result under `research/papers/<slug>/`, and creates the provenance commit locally before any optional push.
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full submission guidelines.
 
 ---

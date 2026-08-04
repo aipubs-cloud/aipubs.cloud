@@ -20,6 +20,8 @@ publications/
 3. Create a `publication.json` manifest (see `publications/examples/example-publication.json`) and place it alongside your paper.
 4. Open a pull request. The RAIP pipeline will generate ACF/ALC hashes and sign the envelope after review.
 
+If you are preparing a publication locally, the [aipubs-upload.sh](../aipubs-upload.sh) registrar can validate the folder, generate a RAIP envelope, and stage it into `research/papers/<slug>/` before you create the pull request.
+
 ## Publication Manifest
 
 Every published paper should include a `publication.json` that declares:

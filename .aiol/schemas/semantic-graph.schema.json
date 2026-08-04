@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/semantic-graph.schema.json",
+  "title": "P2CS Semantic Graph",
+  "description": "Knowledge graph extracted from a publication by the P2CS semantic stage",
+  "type": "object",
+  "required": ["schema_version", "publication_id", "nodes", "edges", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "publication_id": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "label"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["concept", "method", "algorithm", "variable", "dataset", "model", "equation", "framework", "protocol", "api"] },
+          "label": { "type": "string" },
+          "description": { "type": "string" },
+          "source_section": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "attributes": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source", "target", "relation"],
+        "properties": {
+          "id": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "relation": { "type": "string", "enum": ["uses", "implements", "extends", "depends_on", "produces", "references", "equivalent_to", "derived_from"] },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["publication_id", "publication_version", "workflow_id", "workflow_version", "engine_id", "aiol_module_version", "generated_at", "repository_commit", "integrity_hash"],
+      "properties": {
+        "publication_id": { "type": "string" },
+        "publication_version": { "type": "string" },
+        "originating_section": { "type": "string" },
+        "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "workflow_id": { "type": "string" },
+        "workflow_version": { "type": "string" },
+        "engine_id": { "type": "string" },
+        "aiol_module_version": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "repository_commit": { "type": "string" },
+        "integrity_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

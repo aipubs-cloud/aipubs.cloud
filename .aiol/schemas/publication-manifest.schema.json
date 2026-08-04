@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/publication-manifest.schema.json",
+  "title": "P2CS Publication Manifest",
+  "description": "Manifest describing a publication ingested by the P2CS pipeline",
+  "type": "object",
+  "required": ["schema_version", "publication_id", "title", "source_format", "source_hash", "ingested_at"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "publication_id": { "type": "string", "description": "Stable publication identifier" },
+    "title": { "type": "string", "minLength": 3 },
+    "authors": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "orcid": { "type": "string" } } }
+    },
+    "abstract": { "type": "string" },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+    "source_format": { "type": "string", "enum": ["markdown", "pdf", "html", "latex", "docx"] },
+    "source_path": { "type": "string" },
+    "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "ingested_at": { "type": "string", "format": "date-time" },
+    "raip_envelope": { "type": "string", "description": "Path to associated RAIP envelope" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "content_hash"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["abstract", "introduction", "method", "result", "discussion", "conclusion", "reference", "appendix", "other"] },
+          "title": { "type": "string" },
+          "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "equations": { "type": "array", "items": { "type": "object", "required": ["id", "content"], "properties": { "id": { "type": "string" }, "content": { "type": "string" }, "label": { "type": "string" } } } },
+    "algorithms": { "type": "array", "items": { "type": "object", "required": ["id", "name"], "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "pseudocode": { "type": "string" } } } },
+    "figures": { "type": "array", "items": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "caption": { "type": "string" }, "path": { "type": "string" } } } },
+    "references": { "type": "array", "items": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "title": { "type": "string" }, "doi": { "type": "string" } } } },
+    "provenance": { "$ref": "#/definitions/ProvenanceRef" }
+  },
+  "definitions": {
+    "ProvenanceRef": {
+      "type": "object",
+      "required": ["workflow_id", "workflow_version", "repository_commit", "generated_at"],
+      "properties": {
+        "workflow_id": { "type": "string" },
+        "workflow_version": { "type": "string" },
+        "repository_commit": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "integrity_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

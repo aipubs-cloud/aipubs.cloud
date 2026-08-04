@@ -1,0 +1,50 @@
+# P2CS AIOL Module Index
+# Lists all registered AIOL modules for the P2CS subsystem.
+schema_version: "1.0.0"
+index_version: "0.1.0-alpha"
+
+modules:
+  - module_id: p2cs.discovery
+    spec: .aiol/modules/p2cs-discovery.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.parser
+    spec: .aiol/modules/p2cs-parser.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.semantic
+    spec: .aiol/modules/p2cs-semantic.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.synthesis
+    spec: .aiol/modules/p2cs-synthesis.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.experiments
+    spec: .aiol/modules/p2cs-experiments.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.validation
+    spec: .aiol/modules/p2cs-validation.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.provenance
+    spec: .aiol/modules/p2cs-provenance.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.registry
+    spec: .aiol/modules/p2cs-registry.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha
+
+  - module_id: p2cs.benchmark
+    spec: .aiol/modules/p2cs-benchmark.aiol.yml
+    version: "0.1.0-alpha"
+    status: alpha

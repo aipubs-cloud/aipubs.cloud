@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/component-manifest.schema.json",
+  "title": "P2CS Component Manifest",
+  "description": "Manifest for a generated software component artifact",
+  "type": "object",
+  "required": ["schema_version", "component_id", "name", "version", "language", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "component_id": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$" },
+    "description": { "type": "string" },
+    "language": { "type": "string", "enum": ["python", "rust", "typescript", "go", "cpp", "java", "other"] },
+    "license": { "type": "string" },
+    "interfaces": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "type"], "properties": { "name": { "type": "string" }, "type": { "type": "string" }, "description": { "type": "string" } } }
+    },
+    "dependencies": { "type": "array", "items": { "type": "object", "required": ["name", "version"], "properties": { "name": { "type": "string" }, "version": { "type": "string" }, "component_id": { "type": "string" } } } },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "source_dir": { "type": "string" },
+        "tests_dir": { "type": "string" },
+        "docs_dir": { "type": "string" },
+        "examples_dir": { "type": "string" }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "properties": {
+        "test_coverage": { "type": "number" },
+        "lint_passed": { "type": "boolean" },
+        "type_check_passed": { "type": "boolean" },
+        "benchmark_report": { "type": "string" }
+      }
+    },
+    "semantic_version": { "type": "string" },
+    "provenance": {
+      "type": "object",
+      "required": ["publication_id", "publication_version", "workflow_id", "workflow_version", "engine_id", "aiol_module_version", "generated_at", "repository_commit", "integrity_hash"],
+      "properties": {
+        "publication_id": { "type": "string" },
+        "publication_version": { "type": "string" },
+        "originating_section": { "type": "string" },
+        "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "workflow_id": { "type": "string" },
+        "workflow_version": { "type": "string" },
+        "engine_id": { "type": "string" },
+        "aiol_module_version": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "repository_commit": { "type": "string" },
+        "integrity_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

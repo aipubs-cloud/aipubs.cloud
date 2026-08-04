@@ -1,0 +1,65 @@
+# P2CS Contracts Index
+# Enumerates all stable data contracts between P2CS pipeline stages.
+schema_version: "1.0.0"
+
+contracts:
+  - name: PublicationManifest
+    schema: .aiol/schemas/publication-manifest.schema.json
+    python_type: p2cs.contracts.PublicationManifest
+    version: "1.0.0"
+    stage_produced_by: discovery
+    stage_consumed_by: [parser, semantic, provenance]
+
+  - name: SemanticGraph
+    schema: .aiol/schemas/semantic-graph.schema.json
+    python_type: p2cs.contracts.SemanticGraph
+    version: "1.0.0"
+    stage_produced_by: semantic
+    stage_consumed_by: [synthesis, experiments, provenance]
+
+  - name: ComponentManifest
+    schema: .aiol/schemas/component-manifest.schema.json
+    python_type: p2cs.contracts.ComponentManifest
+    version: "1.0.0"
+    stage_produced_by: synthesis
+    stage_consumed_by: [validation, experiments, registry, provenance]
+
+  - name: ExperimentManifest
+    schema: .aiol/schemas/experiment-manifest.schema.json
+    python_type: p2cs.contracts.ExperimentManifest
+    version: "1.0.0"
+    stage_produced_by: experiments
+    stage_consumed_by: [validation, benchmark, registry, provenance]
+
+  - name: ProvenanceManifest
+    schema: .aiol/schemas/provenance-manifest.schema.json
+    python_type: p2cs.contracts.ProvenanceRecord
+    version: "1.0.0"
+    stage_produced_by: provenance
+    stage_consumed_by: [registry, publish]
+
+  - name: BenchmarkReport
+    schema: .aiol/schemas/benchmark-report.schema.json
+    python_type: p2cs.contracts.BenchmarkReport
+    version: "1.0.0"
+    stage_produced_by: benchmark
+    stage_consumed_by: [validation, registry, provenance]
+
+  - name: RegistryEntry
+    schema: .aiol/schemas/registry-entry.schema.json
+    python_type: p2cs.contracts.RegistryEntry
+    version: "1.0.0"
+    stage_produced_by: registry
+    stage_consumed_by: [publish]
+
+  - name: PluginDescriptor
+    schema: .aiol/schemas/plugin-descriptor.schema.json
+    version: "1.0.0"
+    stage_produced_by: plugin_manifest
+    stage_consumed_by: [all]
+
+  - name: AIolModule
+    schema: .aiol/schemas/aiol-module.schema.json
+    version: "1.0.0"
+    stage_produced_by: module_manifest
+    stage_consumed_by: [all]

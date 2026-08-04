@@ -1,0 +1,66 @@
+# AIOL Module Specification: Discovery
+# risk: low
+schema_version: "1.0.0"
+module_id: p2cs.discovery
+name: PublicationDiscovery
+version: "0.1.0-alpha"
+description: >
+  Detects and indexes new or modified publications from repository paths.
+  Emits publication.discovered events consumed by downstream P2CS stages.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, scanning, discovered, failed]
+  terminal_states: [failed]
+  transitions:
+    - { from: idle,       to: scanning,   trigger: scan_requested }
+    - { from: scanning,   to: discovered, trigger: publication_found }
+    - { from: scanning,   to: idle,       trigger: scan_complete_empty }
+    - { from: scanning,   to: failed,     trigger: scan_error }
+
+inputs:
+  - name: scan_paths
+    type: "list[str]"
+    required: true
+    description: Repository-relative paths to scan for publications
+  - name: supported_formats
+    type: "list[str]"
+    required: false
+    description: "Formats to discover: markdown, pdf, html, latex, docx"
+  - name: since_commit
+    type: str
+    required: false
+    description: Only surface publications changed since this git commit
+
+outputs:
+  - name: publication_manifest
+    type: PublicationManifest
+    description: Populated publication manifest ready for parsing
+  - name: discovery_report
+    type: DiscoveryReport
+    description: Summary of discovered publications and any skipped/errored paths
+
+events:
+  - name: publication.discovered
+    payload_type: PublicationManifest
+    description: Emitted once per discovered publication
+  - name: discovery.completed
+    payload_type: DiscoveryReport
+    description: Emitted when scan is complete
+
+interfaces:
+  - name: IPublicationScanner
+    contract: p2cs.discovery.IPublicationScanner
+  - name: IFormatDetector
+    contract: p2cs.discovery.IFormatDetector
+
+capabilities:
+  - filesystem.read
+  - git.log
+
+plugin_interfaces:
+  - event: publication.discovered
+    contract: p2cs.discovery.IDiscoveryPlugin
+    description: Plugins receive each discovered publication manifest
+
+dependencies: []

@@ -1,0 +1,98 @@
+name: P2CS Discovery
+
+on:
+  push:
+    paths:
+      - "publications/**"
+      - "research/papers/**"
+  workflow_dispatch:
+    inputs:
+      since_commit:
+        description: "Only surface publications changed since this commit (optional)"
+        required: false
+  schedule:
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: Discover Publications
+    runs-on: ubuntu-latest
+    outputs:
+      discovery_report: ${{ steps.scan.outputs.discovery_report }}
+      manifests_artifact: ${{ steps.scan.outputs.manifests_artifact }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install P2CS
+        run: |
+          pip install jsonschema PyYAML
+
+      - name: Scan publications
+        id: scan
+        run: |
+          python - << 'EOF'
+          import json, hashlib, os, sys
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          scan_paths = ["publications", "research/papers"]
+          supported_exts = {".md": "markdown", ".pdf": "pdf", ".html": "html", ".tex": "latex", ".docx": "docx"}
+          since_commit = os.environ.get("INPUT_SINCE_COMMIT", "")
+
+          discovered = []
+          for base in scan_paths:
+              p = Path(base)
+              if not p.exists():
+                  continue
+              for f in sorted(p.rglob("*")):
+                  if not f.is_file():
+                      continue
+                  ext = f.suffix.lower()
+                  if ext not in supported_exts:
+                      continue
+                  content = f.read_bytes()
+                  manifest = {
+                      "schema_version": "1.0.0",
+                      "publication_id": f.stem.replace(" ", "-").lower(),
+                      "title": f.stem.replace("-", " ").replace("_", " ").title(),
+                      "source_format": supported_exts[ext],
+                      "source_path": str(f),
+                      "source_hash": "sha256:" + hashlib.sha256(content).hexdigest(),
+                      "ingested_at": datetime.now(tz=timezone.utc).isoformat(),
+                  }
+                  discovered.append(manifest)
+
+          out_dir = Path("generated/manifests")
+          out_dir.mkdir(parents=True, exist_ok=True)
+          report = {"total": len(discovered), "publications": [m["publication_id"] for m in discovered]}
+
+          for m in discovered:
+              out_file = out_dir / f"{m['publication_id']}.manifest.json"
+              out_file.write_text(json.dumps(m, indent=2))
+
+          report_path = out_dir / "discovery-report.json"
+          report_path.write_text(json.dumps(report, indent=2))
+          print(f"Discovered {len(discovered)} publications")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"discovery_report={report_path}\n")
+              fh.write(f"manifests_artifact=generated/manifests\n")
+          EOF
+
+      - name: Upload manifests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2cs-manifests-${{ github.run_id }}
+          path: generated/manifests/
+          retention-days: 30

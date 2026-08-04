@@ -1,0 +1,51 @@
+# AIOL Module Specification: ExperimentBuilder
+# risk: medium
+schema_version: "1.0.0"
+module_id: p2cs.experiments
+name: ExperimentBuilder
+version: "0.1.0-alpha"
+description: >
+  Generates reproducible experiment scaffolds from synthesized components and semantic graph.
+  Each experiment includes entrypoint, configuration, expected outputs, reproducibility metadata,
+  and benchmark hooks. No experiment template is hardcoded; all generation is plugin-driven.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, building, built, failed]
+  terminal_states: [failed]
+  transitions:
+    - { from: idle,     to: building, trigger: experiment_requested }
+    - { from: building, to: built,    trigger: build_succeeded }
+    - { from: building, to: failed,   trigger: build_error }
+
+inputs:
+  - name: component_manifests
+    type: "list[ComponentManifest]"
+    required: true
+  - name: semantic_graph
+    type: SemanticGraph
+    required: true
+
+outputs:
+  - name: experiment_manifests
+    type: "list[ExperimentManifest]"
+
+events:
+  - name: experiment.generated
+    payload_type: ExperimentManifest
+
+interfaces:
+  - name: IExperimentBuilder
+    contract: p2cs.experiments.IExperimentBuilder
+
+capabilities:
+  - experiment.scaffold
+  - filesystem.write
+
+plugin_interfaces:
+  - event: experiment.generated
+    contract: p2cs.experiments.IExperimentPlugin
+
+dependencies:
+  - module_id: p2cs.synthesis
+    version: ">=0.1.0"

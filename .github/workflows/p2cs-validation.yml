@@ -1,0 +1,111 @@
+name: P2CS Validation
+
+on:
+  workflow_run:
+    workflows: ["P2CS Synthesis"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      components_run_id:
+        description: "Run ID of the P2CS Synthesis workflow"
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  validate:
+    name: Validate Generated Artifacts
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install jsonschema PyYAML
+
+      - name: Download components artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: p2cs-components-${{ github.event.workflow_run.id || inputs.components_run_id }}
+          path: generated/components/
+        continue-on-error: true
+
+      - name: Validate component manifests
+        run: |
+          python - << 'EOF'
+          import json, sys
+          from pathlib import Path
+
+          schema_path = Path(".aiol/schemas/component-manifest.schema.json")
+          if not schema_path.exists():
+              print("Schema not found — skipping")
+              sys.exit(0)
+
+          try:
+              import jsonschema
+          except ImportError:
+              sys.exit(0)
+
+          schema = json.loads(schema_path.read_text())
+          errors = []
+          checked = 0
+
+          for mf in Path("generated/components").rglob("component.manifest.json"):
+              try:
+                  jsonschema.validate(json.loads(mf.read_text()), schema)
+                  checked += 1
+                  print(f"  ✓ {mf}")
+              except jsonschema.ValidationError as e:
+                  errors.append(f"  ✗ {mf}: {e.message}")
+
+          if errors:
+              for err in errors:
+                  print(err)
+              sys.exit(1)
+          print(f"\nAll {checked} component manifest(s) passed schema validation.")
+          EOF
+
+      - name: Validate provenance integrity hashes
+        run: |
+          python - << 'EOF'
+          import json, hashlib, sys
+          from pathlib import Path
+
+          errors = []
+          for mf in Path("generated").rglob("*.manifest.json"):
+              data = json.loads(mf.read_text())
+              prov = data.get("provenance", {})
+              stored_hash = prov.get("integrity_hash", "")
+              if not stored_hash:
+                  continue
+              # Recompute: hash the manifest with integrity_hash cleared
+              prov_copy = {**prov, "integrity_hash": ""}
+              check_data = {**data, "provenance": prov_copy}
+              content = json.dumps(check_data, indent=2)
+              computed = "sha256:" + hashlib.sha256(content.encode()).hexdigest()
+              if computed != stored_hash:
+                  errors.append(f"  ✗ {mf}: integrity mismatch")
+              else:
+                  print(f"  ✓ {mf.name}")
+
+          if errors:
+              for err in errors:
+                  print(err)
+              sys.exit(1)
+          EOF
+
+      - name: Upload validation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2cs-validation-${{ github.run_id }}
+          path: generated/
+          retention-days: 30

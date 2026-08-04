@@ -1,0 +1,50 @@
+# AIOL Module Specification: BenchmarkEngine
+# risk: low
+schema_version: "1.0.0"
+module_id: p2cs.benchmark
+name: BenchmarkEngine
+version: "0.1.0-alpha"
+description: >
+  Executes benchmark suites against generated components and experiments.
+  Measures execution speed, memory, accuracy, convergence, and reproducibility.
+  Produces BenchmarkReport artifacts with provenance.
+
+lifecycle:
+  initial_state: idle
+  states: [idle, running, completed, failed]
+  terminal_states: [completed, failed]
+  transitions:
+    - { from: idle,    to: running,   trigger: benchmark_requested }
+    - { from: running, to: completed, trigger: benchmark_succeeded }
+    - { from: running, to: failed,    trigger: benchmark_error }
+
+inputs:
+  - name: component_or_experiment
+    type: "ComponentManifest | ExperimentManifest"
+    required: true
+
+outputs:
+  - name: benchmark_report
+    type: BenchmarkReport
+
+events:
+  - name: benchmark.completed
+    payload_type: BenchmarkReport
+
+interfaces:
+  - name: IBenchmarkEngine
+    contract: p2cs.benchmark.IBenchmarkEngine
+  - name: IMetricCollector
+    contract: p2cs.benchmark.IMetricCollector
+
+capabilities:
+  - benchmark.execute
+  - metrics.collect
+
+plugin_interfaces:
+  - event: benchmark.completed
+    contract: p2cs.benchmark.IBenchmarkPlugin
+
+dependencies:
+  - module_id: p2cs.validation
+    version: ">=0.1.0"

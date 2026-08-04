@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/provenance-manifest.schema.json",
+  "title": "P2CS Provenance Manifest",
+  "description": "Full provenance chain for any P2CS-generated artifact, extending RAIP",
+  "type": "object",
+  "required": ["schema_version", "artifact_id", "artifact_type", "publication", "synthesis", "integrity"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "artifact_id": { "type": "string" },
+    "artifact_type": { "type": "string", "enum": ["component", "experiment", "semantic_graph", "benchmark_report", "prompt", "documentation", "registry_entry"] },
+    "publication": {
+      "type": "object",
+      "required": ["id", "version", "source_hash"],
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "originating_section": { "type": "string" },
+        "raip_envelope": { "type": "string" }
+      }
+    },
+    "synthesis": {
+      "type": "object",
+      "required": ["workflow_id", "workflow_version", "engine_id", "aiol_module_version", "generated_at", "repository_commit"],
+      "properties": {
+        "workflow_id": { "type": "string" },
+        "workflow_version": { "type": "string" },
+        "engine_id": { "type": "string" },
+        "aiol_module_version": { "type": "string" },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "repository_commit": { "type": "string" },
+        "run_id": { "type": "string" }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["content_hash"],
+      "properties": {
+        "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "signature": { "type": "string", "description": "Optional Ed25519 signature over content_hash" },
+        "public_key": { "type": "string" }
+      }
+    },
+    "parent_provenance": {
+      "type": "array",
+      "description": "Provenance chain of upstream artifacts",
+      "items": { "type": "string", "description": "Artifact ID of upstream provenance" }
+    }
+  }
+}

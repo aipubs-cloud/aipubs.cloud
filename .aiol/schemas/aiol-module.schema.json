@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/p2cs/aiol-module.schema.json",
+  "title": "AIOL Module",
+  "description": "Schema for an AIOL module descriptor used by P2CS",
+  "type": "object",
+  "required": ["schema_version", "module_id", "name", "version", "lifecycle", "interfaces", "capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "module_id": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$" },
+    "description": { "type": "string" },
+    "lifecycle": {
+      "type": "object",
+      "required": ["states", "transitions"],
+      "properties": {
+        "states": { "type": "array", "items": { "type": "string" } },
+        "transitions": {
+          "type": "array",
+          "items": { "type": "object", "required": ["from", "to", "trigger"], "properties": { "from": { "type": "string" }, "to": { "type": "string" }, "trigger": { "type": "string" } } }
+        },
+        "initial_state": { "type": "string" },
+        "terminal_states": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "type"], "properties": { "name": { "type": "string" }, "type": { "type": "string" }, "required": { "type": "boolean" }, "description": { "type": "string" } } }
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "type"], "properties": { "name": { "type": "string" }, "type": { "type": "string" }, "description": { "type": "string" } } }
+    },
+    "events": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "payload_type"], "properties": { "name": { "type": "string" }, "payload_type": { "type": "string" }, "description": { "type": "string" } } }
+    },
+    "interfaces": {
+      "type": "array",
+      "items": { "type": "object", "required": ["name", "contract"], "properties": { "name": { "type": "string" }, "contract": { "type": "string" }, "description": { "type": "string" } } }
+    },
+    "capabilities": { "type": "array", "items": { "type": "string" } },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "object", "required": ["module_id", "version"], "properties": { "module_id": { "type": "string" }, "version": { "type": "string" }, "optional": { "type": "boolean" } } }
+    },
+    "plugin_interfaces": {
+      "type": "array",
+      "items": { "type": "object", "required": ["event", "contract"], "properties": { "event": { "type": "string" }, "contract": { "type": "string" }, "description": { "type": "string" } } }
+    }
+  }
+}

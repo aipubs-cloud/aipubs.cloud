@@ -1,0 +1,122 @@
+name: P2CS Synthesis
+
+on:
+  workflow_run:
+    workflows: ["P2CS Analysis"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      semantic_run_id:
+        description: "Run ID of the P2CS Analysis workflow"
+        required: true
+      confidence_threshold:
+        description: "Minimum confidence threshold (0.0–1.0)"
+        default: "0.7"
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  synthesize:
+    name: Synthesize Components (Skeleton)
+    runs-on: ubuntu-latest
+    # Synthesis emits component scaffolds only; no automated merge without human review.
+    # risk: high — all outputs must be reviewed before merging to main.
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install jsonschema PyYAML
+
+      - name: Download semantic graphs
+        uses: actions/download-artifact@v4
+        with:
+          name: p2cs-semantic-${{ github.event.workflow_run.id || inputs.semantic_run_id }}
+          path: generated/semantic/
+        continue-on-error: true
+
+      - name: Generate component scaffolds
+        run: |
+          python - << 'EOF'
+          # Skeleton component generator — creates manifest and directory structure only.
+          # Real synthesis logic is injected via ISynthesisEngine plugins in future phases.
+          import json, hashlib, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          semantic_dir = Path("generated/semantic")
+          components_dir = Path("generated/components")
+          components_dir.mkdir(parents=True, exist_ok=True)
+
+          commit = "unknown"
+          import subprocess
+          try:
+              commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          except Exception:
+              pass
+
+          threshold = float(os.environ.get("INPUT_CONFIDENCE_THRESHOLD", "0.7"))
+
+          for sf in sorted(semantic_dir.glob("*.semantic.json")):
+              graph = json.loads(sf.read_text())
+              pub_id = graph.get("publication_id", sf.stem)
+              for lang in ["python", "typescript"]:
+                  comp_id = f"{pub_id}-{lang}-v0.1.0"
+                  comp_dir = components_dir / lang / pub_id
+                  comp_dir.mkdir(parents=True, exist_ok=True)
+                  (comp_dir / "README.md").write_text(
+                      f"# {pub_id} ({lang})\n\n"
+                      f"> **Auto-generated scaffold** — synthesised from `{pub_id}`.\n"
+                      f"> Replace this placeholder with generated implementation.\n"
+                  )
+                  for sub in ["source", "tests", "examples", "docs"]:
+                      (comp_dir / sub).mkdir(exist_ok=True)
+                      (comp_dir / sub / ".gitkeep").touch()
+                  manifest = {
+                      "schema_version": "1.0.0",
+                      "component_id": comp_id,
+                      "name": pub_id,
+                      "version": "0.1.0",
+                      "language": lang,
+                      "license": "Apache-2.0",
+                      "interfaces": [],
+                      "dependencies": [],
+                      "source_dir": str(comp_dir / "source"),
+                      "quality": {},
+                      "provenance": {
+                          "publication_id": pub_id,
+                          "publication_version": "1.0.0",
+                          "source_hash": graph.get("provenance", {}).get("source_hash", ""),
+                          "workflow_id": "p2cs-synthesis",
+                          "workflow_version": "0.1.0-alpha",
+                          "engine_id": "skeleton",
+                          "aiol_module_version": "0.1.0-alpha",
+                          "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+                          "repository_commit": commit,
+                          "integrity_hash": "",
+                      },
+                  }
+                  content = json.dumps(manifest, indent=2)
+                  manifest["provenance"]["integrity_hash"] = (
+                      "sha256:" + hashlib.sha256(content.encode()).hexdigest()
+                  )
+                  (comp_dir / "component.manifest.json").write_text(json.dumps(manifest, indent=2))
+                  print(f"  ✓ {comp_id}")
+          EOF
+
+      - name: Upload components artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2cs-components-${{ github.run_id }}
+          path: generated/components/
+          retention-days: 30

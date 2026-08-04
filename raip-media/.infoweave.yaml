@@ -27,5 +27,7 @@ module:
     schema_version: "1.0"
   lifecycle:
     status: mvp
-    introduced: "2024-06-01"
+    introduced:
+      project: "2024-01-01"
+      module: "2026-08-04"
     last_reviewed: "2026-08-04"

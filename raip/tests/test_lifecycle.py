@@ -90,3 +90,10 @@ def test_lifecycle_event_rejects_invalid_type():
 def test_lifecycle_event_from_dict_rejects_invalid_type():
     with pytest.raises(ValueError, match="Unknown lifecycle event type"):
         LifecycleEvent.from_dict({"type": "BOGUS", "timestamp": "2026-01-01T00:00:00+00:00", "actor": "test"})
+
+
+@pytest.mark.parametrize("invalid", ["", "created", None])
+def test_validate_event_type_edge_cases(invalid):
+    """Empty string, lowercase, and None must all raise ValueError."""
+    with pytest.raises(ValueError):
+        validate_event_type(invalid)

@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aipubs.cloud/schemas/raip-envelope.schema.json",
+  "title": "RAIP Envelope",
+  "description": "Schema for a RAIP v1 integrity envelope (.raip.json)",
+  "type": "object",
+  "required": ["version", "acf", "alc", "signature", "public_key", "events"],
+  "additionalProperties": true,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Envelope format version"
+    },
+    "acf": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Artifact Content Fingerprint (sha256:<hex>)"
+    },
+    "alc": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Artifact Lifecycle Chain hash (sha256:<hex>)"
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Base64url-encoded Ed25519 signature"
+    },
+    "public_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Base64url-encoded Ed25519 public key (raw 32 bytes)"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered lifecycle events",
+      "items": {
+        "type": "object",
+        "required": ["type", "timestamp", "actor"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "SUBMITTED",
+              "REVIEWED",
+              "REVISED",
+              "ACCEPTED",
+              "PUBLISHED",
+              "ARCHIVED",
+              "REVOKED"
+            ]
+          },
+          "timestamp": { "type": "string" },
+          "actor": { "type": "string" },
+          "metadata": { "type": "object" }
+        }
+      }
+    },
+    "algorithm": { "type": "string" },
+    "sign_algorithm": { "type": "string" },
+    "author": { "type": "string" },
+    "created": { "type": "string" }
+  }
+}

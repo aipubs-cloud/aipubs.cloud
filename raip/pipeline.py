@@ -28,6 +28,7 @@ from raip.core.verifier import VerifyReport, verify_envelope
 FAILURE_CODES: Dict[str, str] = {
     "MISSING_REQUIRED_FIELD": "A required metadata field is absent",
     "SCHEMA_VALIDATION_FAILED": "Document does not conform to its JSON Schema",
+    "ENVELOPE_SCHEMA_INVALID": "Envelope structure does not conform to RAIP envelope schema",
     "ACF_MISSING": "Envelope is missing the artifact content fingerprint",
     "ACF_MISMATCH": "Artifact bytes do not match the recorded ACF",
     "ALC_MISSING": "Envelope is missing the artifact lifecycle chain hash",
@@ -117,6 +118,7 @@ class ValidationReport:
 # ---------------------------------------------------------------------------
 
 _SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
+_ENVELOPE_SCHEMA_NAME = "raip-envelope"
 
 
 def _load_schema(name: str) -> Optional[Dict[str, Any]]:
@@ -220,6 +222,38 @@ def validate_submission(
     try:
         artifact_bytes = artifact_path.read_bytes()
         envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        report.stages.append(StageResult(
+            stage="raip_envelope",
+            passed=False,
+            failure_code="INTERNAL_ERROR",
+            message="Exception reading artifact or envelope",
+            detail=str(exc),
+        ))
+        report.overall = False
+        return report
+
+    # ----- Stage 2a: Envelope structural schema validation ------------------
+    # Validate envelope shape before cryptographic verification so that
+    # malformed envelopes are rejected with a clear failure code rather than
+    # hitting deeper code with unexpected data.
+    envelope_schema = _load_schema(_ENVELOPE_SCHEMA_NAME)
+    if envelope_schema is not None:
+        try:
+            jsonschema.validate(instance=envelope, schema=envelope_schema)
+        except jsonschema.ValidationError as exc:
+            report.stages.append(StageResult(
+                stage="raip_envelope",
+                passed=False,
+                failure_code="ENVELOPE_SCHEMA_INVALID",
+                message=exc.message,
+                detail=str(exc.absolute_path) if exc.absolute_path else None,
+            ))
+            report.overall = False
+            return report
+
+    # ----- Stage 2b: Cryptographic verification (ACF → ALC → SIGN) ---------
+    try:
         verify_report: VerifyReport = verify_envelope(artifact_bytes, envelope)
     except Exception as exc:
         report.stages.append(StageResult(

@@ -114,7 +114,7 @@ def test_signature_invalid(tmp_path, signed_envelope):
 
 
 def test_missing_signature_field(tmp_path, signed_envelope):
-    """Envelope with no signature field must produce SIGNATURE_MISSING."""
+    """Envelope with no signature field must fail — caught by schema validation."""
     env = copy.deepcopy(signed_envelope)
     del env["signature"]
     artifact, env_path = _write_files(tmp_path, _ARTIFACT, env)
@@ -122,7 +122,8 @@ def test_missing_signature_field(tmp_path, signed_envelope):
     stage = report.stage("raip_envelope")
     assert stage is not None
     assert stage.passed is False
-    assert stage.failure_code == "SIGNATURE_MISSING"
+    # The envelope schema layer catches missing required fields before crypto.
+    assert stage.failure_code == "ENVELOPE_SCHEMA_INVALID"
 
 
 def test_provenance_receipt_present_on_success(tmp_path, signed_envelope):

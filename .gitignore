@@ -38,8 +38,10 @@ Thumbs.db
 .cache/
 
 # Test coverage
-
 coverage/
+.coverage
+.pytest_cache/
+htmlcov/
 
 # Cloudflare
 

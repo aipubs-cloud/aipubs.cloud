@@ -3,11 +3,10 @@
 Verifies that:
 - valid paper metadata passes the schema
 - invalid/missing required fields are caught with the correct failure path
-- the ValidationReport carries SCHEMA_VALIDATION_FAILED on bad input
+- the pipeline carries SCHEMA_VALIDATION_FAILED on bad input
 """
 
-import pytest
-from raip.pipeline import validate_submission, ValidationReport
+from raip.pipeline import validate_submission
 
 _VALID_META = {
     "title": "Deterministic RAIP Canonicalization in Distributed Environments",

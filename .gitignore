@@ -62,3 +62,21 @@ raip.egg-info/
 raip-media/*.egg-info/
 __pycache__/
 *.pyc
+.venv/
+test-reports/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test artifacts
+.pytest_cache/
+.coverage
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
+
+# Generated audit reports
+test-reports/

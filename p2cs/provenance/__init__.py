@@ -86,10 +86,20 @@ class DefaultProvenanceEngine(IProvenanceEngine):
             generated_at=datetime.now(tz=timezone.utc),
             repository_commit=context.repository_commit,
         )
+        from dataclasses import asdict, is_dataclass
+
         if hasattr(artifact, "to_dict"):
-            artifact_bytes = json.dumps(artifact.to_dict(), sort_keys=True).encode("utf-8")
+            payload = artifact.to_dict()
+        elif is_dataclass(artifact):
+            payload = asdict(artifact)
         else:
-            artifact_bytes = json.dumps(artifact, sort_keys=True).encode("utf-8")
+            payload = artifact
+
+        artifact_bytes = json.dumps(
+            payload,
+            sort_keys=True,
+            default=lambda o: o.isoformat() if isinstance(o, datetime) else str(o),
+        ).encode("utf-8")
         return record.compute_integrity(artifact_bytes)
 
     def verify(self, artifact: Any, record: ProvenanceRecord) -> bool:

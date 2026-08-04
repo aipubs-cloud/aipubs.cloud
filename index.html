@@ -290,147 +290,16 @@
             "Cognitive Architectures", "Synthetic Intelligence", "Federated Learning", "Ethics"
         ];
 
-        const mockPapers = [
-            {
-                id: "paper-001",
-                title: "Emergent Reasoning Capabilities in Transformer-Based Architectures via Synthetic Chain-of-Thought Generation",
-                authors: [
-                    { name: "Dr. Elara Vance", org: "Institute for Cognitive Computing" },
-                    { name: "Julian Thorne", org: "OpenAI Alignment Group" }
-                ],
-                date: "2024-05-12",
-                category: "Large Language Models",
-                tags: ["LLMs", "Reasoning", "Chain-of-Thought", "Synthetic Data"],
-                abstract: "This paper investigates the emergence of complex reasoning capabilities in smaller (<10B parameter) transformer models when trained exclusively on highly curated, synthetically generated chain-of-thought data. We demonstrate a novel pipeline for generating diverse, multi-step logical derivations and show that models fine-tuned on this dataset match the performance of models 10x their size on standard reasoning benchmarks.",
-                stats: { citations: 142, downloads: 4521, views: 12050 },
-                hasDataset: true,
-                hasCode: true,
-                provenance: {
-                    status: "Verified",
-                    acf: "sha256:8f4b4a8a7f9b2c6e1a5d0f3c9e7b1a2d4c6f8e0a3b5d7c9f1e2a4b6c8d0e2f4a",
-                    alc: "sha256:5c2e6f8a1d4b7c9e0f3a5d8b1c4e6f9a2d5b8c1e4f7a0d3c6e9b2a5d8f1c4e7",
-                    signer: "AIPubs RAIP Release Key",
-                    vectors: "TV-008..011"
-                },
-                markdownContent: `
-## 1. Introduction
+        // Live RAIP registry — populated by publication-index.json once real artifacts are indexed.
+        // Future flow: research/papers/ → generate-index.yml → publication-index.json → mockPapers
+        const mockPapers = [];
 
-The scaling laws of neural language models have traditionally suggested that reasoning capabilities emerge primarily as a function of parameter count and extensive training compute. However, recent work indicates that data quality, particularly the presence of explicit logical pathways (Chain-of-Thought or CoT), plays a crucial role.
-
-In this work, we propose **SynthReas**, a methodology for generating arbitrary volumes of high-quality CoT data using larger oracle models, designed to teach smaller models *how* to think, rather than just *what* to output.
-
-### 1.1 The Reasoning Gap
-
-While models like GPT-4 exhibit strong reasoning, deploying them locally or in resource-constrained environments is impossible. We aim to bridge the "reasoning gap" for sub-10B models.
-
-## 2. Methodology
-
-Our approach consists of two phases: Generation and Fine-Tuning.
-
-### 2.1 Synthetic Data Generation
-
-We formulate the generation process as a Markov Decision Process (MDP) where the oracle model generates intermediate reasoning steps $s_t$.
-
-The probability of a final answer $A$ given a question $Q$ is defined as:
-
-$$ P(A|Q) = \sum_{C \in \mathcal{C}} P(A|C, Q) P(C|Q) $$
-
-where $C$ is a specific chain of thought sequence $c_1, c_2, ..., c_n$. We use an oracle model to sample valid, high-probability trajectories $C$ that lead to correct answers.
-
-### 2.2 Model Architecture
-
-We utilize a standard LLaMA-based architecture with Rotary Position Embeddings (RoPE).
-
-\`\`\`python
-import torch
-import torch.nn as nn
-
-class ReasoningTransformer(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.embed = nn.Embedding(config.vocab_size, config.hidden_dim)
-        self.layers = nn.ModuleList([
-            TransformerBlock(config) for _ in range(config.num_layers)
-        ])
-        self.lm_head = nn.Linear(config.hidden_dim, config.vocab_size, bias=False)
-        
-    def forward(self, input_ids):
-        # Implementation details omitted for brevity
-        x = self.embed(input_ids)
-        for layer in self.layers:
-            x = layer(x)
-        return self.lm_head(x)
-\`\`\`
-
-## 3. Experiments and Results
-
-We evaluated our fine-tuned 7B model (SynthReas-7B) against several baselines on GSM8K and strategyQA.
-
-| Model | Size | GSM8K (Accuracy) | StrategyQA (Accuracy) |
-| :--- | :---: | :---: | :---: |
-| Base-7B | 7B | 14.5% | 55.2% |
-| **SynthReas-7B (Ours)**| **7B** | **58.2%** | **71.4%** |
-| Base-70B | 70B | 56.8% | 70.1% |
-
-As shown in the table above, our 7B model outperforms the standard 70B baseline, demonstrating the extreme sample efficiency of high-quality synthetic CoT data.
-
-## 4. Conclusion
-
-By shifting the focus from parameter scaling to data curation, we can democratize access to reasoning capabilities in AI models. Future work will explore applying this methodology to multi-modal reasoning tasks.
-                `
-            },
-            {
-                id: "paper-002",
-                title: "Topological Interpretability: Mapping Neural Network Activations to Geometric Manifolds",
-                authors: [
-                    { name: "Sarah Chen", org: "MIT CSAIL" },
-                    { name: "David Kim", org: "Stanford AI Lab" }
-                ],
-                date: "2024-04-28",
-                category: "Interpretability",
-                tags: ["Topology", "Neural Networks", "Manifold Hypothesis", "XAI"],
-                abstract: "Understanding the internal representations of deep neural networks remains a significant challenge. We present a novel framework utilizing topological data analysis (TDA) to map high-dimensional activation vectors onto lower-dimensional geometric manifolds. By analyzing the Betti numbers and persistent homology of these representations during training, we reveal structural phase transitions that correlate with the model's acquisition of generalized concepts.",
-                stats: { citations: 89, downloads: 3100, views: 8400 },
-                hasDataset: false,
-                hasCode: true,
-                provenance: {
-                    status: "Verified",
-                    acf: "sha256:42a8d7e9c1f4b6a0d3e5f8b2c4a7d9e1f3b6c8a0d2e5f7b9c1a4d6e8f0b3c5a7",
-                    alc: "sha256:91c4e7a0d3f6b9c2e5a8d1f4b7c0e3a6d9f2b5c8e1a4d7f0b3c6e9a2d5f8b1c4",
-                    signer: "AIPubs RAIP Release Key",
-                    vectors: "TV-008..011"
-                },
-                markdownContent: "## Introduction\n\nFull text of Topological Interpretability..."
-            },
-            {
-                id: "paper-003",
-                title: "Federated Reinforcement Learning for Autonomous Drone Swarms in Urban Environments",
-                authors: [
-                    { name: "Marcus Rossi", org: "AeroAI Systems" }
-                ],
-                date: "2024-05-18",
-                category: "Reinforcement Learning",
-                tags: ["Robotics", "UAV", "Federated Learning", "Multi-Agent RL"],
-                abstract: "Deploying autonomous drone swarms in complex urban settings requires robust collision avoidance and dynamic pathing without centralized control. We propose a decentralized Multi-Agent Reinforcement Learning (MARL) approach combined with Federated Learning to preserve operational privacy while sharing navigational heuristics.",
-                stats: { citations: 12, downloads: 850, views: 2100 },
-                hasDataset: true,
-                hasCode: false,
-                provenance: {
-                    status: "Pending vectors",
-                    acf: "sha256:7b1d4f6a9c2e5b8d0f3a6c9e1b4d7f0a3c6e9b2d5f8a1c4e7b0d3f6a9c2e5b8",
-                    alc: "sha256:pending-alc-after-review",
-                    signer: "Author key pending",
-                    vectors: "awaiting TV-008 baseline"
-                },
-                markdownContent: "## Abstract\n\nFull text of Federated RL..."
-            }
-        ];
-
+        // Stats are registry-derived; will update once publication-index.json is generated.
         const platformStats = {
-            publications: "12,450",
-            authors: "8,210",
-            datasets: "1,105",
-            openSource: "9,420"
+            publications: "0",
+            authors: "0",
+            datasets: "0",
+            openSource: "0"
         };
 
         const raipLayers = [
@@ -811,29 +680,45 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
                                 <div class="space-y-6">
             `;
 
-            // Render mock papers as cards
-            mockPapers.forEach(paper => {
+            // Render verified publications or empty state
+            if (mockPapers.length === 0) {
                 html += `
-                    <div class="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer group" onclick="navigate('paper', {id: '${paper.id}'})">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="inline-flex items-center rounded-md bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-700/10 mb-3">${paper.category}</span>
-                            <span class="text-xs text-slate-500">${paper.date}</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-900 group-hover:text-brand-600 transition mb-2">${paper.title}</h3>
-                        <p class="text-sm text-slate-600 mb-4 line-clamp-2">${paper.abstract}</p>
-                        <div class="flex flex-wrap items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                            <div class="flex items-center gap-2 text-sm text-slate-500">
-                                <i class="ph ph-users"></i>
-                                <span>${paper.authors.map(a => a.name).join(', ')}</span>
-                            </div>
-                            <div class="flex gap-4 text-xs font-medium text-slate-500">
-                                <span title="Citations" class="flex items-center gap-1"><i class="ph ph-quotes"></i> ${paper.stats.citations}</span>
-                                <span title="Downloads" class="flex items-center gap-1"><i class="ph ph-download-simple"></i> ${paper.stats.downloads}</span>
-                            </div>
-                        </div>
+                    <div class="text-center py-20 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+                        <i class="ph ph-shield-check text-4xl text-slate-400 mb-3"></i>
+                        <h3 class="text-xl font-semibold text-slate-900 mb-2">No verified publications yet</h3>
+                        <p class="text-slate-500 mt-1 max-w-sm mx-auto">The first RAIP-backed research artifact will appear here after validation.</p>
+                        <button onclick="navigate('publish')" class="mt-6 inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-md text-sm font-medium transition shadow-sm">
+                            <i class="ph ph-upload-simple"></i> Submit a Publication
+                        </button>
+                        <p class="mt-3 text-xs text-slate-400">
+                            <a href="#" onclick="navigate('publish')" class="hover:underline">Learn about the RAIP publication workflow &rarr;</a>
+                        </p>
                     </div>
                 `;
-            });
+            } else {
+                mockPapers.forEach(paper => {
+                    html += `
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer group" onclick="navigate('paper', {id: '${paper.id}'})">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="inline-flex items-center rounded-md bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-700/10 mb-3">${paper.category}</span>
+                                <span class="text-xs text-slate-500">${paper.date}</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 group-hover:text-brand-600 transition mb-2">${paper.title}</h3>
+                            <p class="text-sm text-slate-600 mb-4 line-clamp-2">${paper.abstract}</p>
+                            <div class="flex flex-wrap items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                                <div class="flex items-center gap-2 text-sm text-slate-500">
+                                    <i class="ph ph-users"></i>
+                                    <span>${paper.authors.map(a => a.name).join(', ')}</span>
+                                </div>
+                                <div class="flex gap-4 text-xs font-medium text-slate-500">
+                                    <span title="Citations" class="flex items-center gap-1"><i class="ph ph-quotes"></i> ${paper.stats.citations}</span>
+                                    <span title="Downloads" class="flex items-center gap-1"><i class="ph ph-download-simple"></i> ${paper.stats.downloads}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
 
             html += `
                                 </div>
@@ -874,9 +759,19 @@ By shifting the focus from parameter scaling to data curation, we can democratiz
         }
 
         function renderPaper(id) {
-            const paper = mockPapers.find(p => p.id === id) || mockPapers[0]; // fallback
-            
-            // Inject dynamic Schema.org JSON-LD and update page meta
+            const paper = mockPapers.find(p => p.id === id);
+            if (!paper) {
+                return `
+                    <div class="max-w-3xl mx-auto px-4 py-20 text-center fade-in">
+                        <i class="ph ph-file-x text-5xl text-slate-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Publication not found</h2>
+                        <p class="text-slate-500 mb-6">This publication does not exist in the verified RAIP registry yet.</p>
+                        <button onclick="navigate('home')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-md text-sm font-medium transition shadow-sm">
+                            <i class="ph ph-house"></i> Back to Home
+                        </button>
+                    </div>
+                `;
+            }
             injectPaperJsonLd(paper);
             updatePageMeta(
                 `${paper.title} | AIPubs.cloud`,

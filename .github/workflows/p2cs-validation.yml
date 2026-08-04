@@ -81,7 +81,7 @@ jobs:
           from pathlib import Path
 
           errors = []
-          for mf in Path("generated").rglob("*.manifest.json"):
+          for mf in list(Path("generated").rglob("*.manifest.json")) + list(Path("generated").rglob("*.semantic.json")):
               data = json.loads(mf.read_text())
               prov = data.get("provenance", {})
               stored_hash = prov.get("integrity_hash", "")

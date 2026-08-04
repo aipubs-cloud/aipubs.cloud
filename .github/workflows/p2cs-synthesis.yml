@@ -65,7 +65,7 @@ jobs:
           except Exception:
               pass
 
-          threshold = float(os.environ.get("INPUT_CONFIDENCE_THRESHOLD", "0.7"))
+          # confidence_threshold reserved for future synthesis engines; unused in scaffold generator
 
           for sf in sorted(semantic_dir.glob("*.semantic.json")):
               graph = json.loads(sf.read_text())

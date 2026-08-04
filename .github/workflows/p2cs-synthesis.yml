@@ -91,7 +91,12 @@ jobs:
                       "license": "Apache-2.0",
                       "interfaces": [],
                       "dependencies": [],
-                      "source_dir": str(comp_dir / "source"),
+                      "artifacts": {
+                          "source_dir": str(comp_dir / "source"),
+                          "tests_dir": str(comp_dir / "tests"),
+                          "examples_dir": str(comp_dir / "examples"),
+                          "docs_dir": str(comp_dir / "docs"),
+                      },
                       "quality": {},
                       "provenance": {
                           "publication_id": pub_id,

@@ -2,7 +2,13 @@
 
 from raip.core.canonicalize import canonicalize
 from raip.core.hashing import compute_acf, compute_file_acf
-from raip.core.lifecycle import LifecycleEvent, compute_alc, now_iso
+from raip.core.lifecycle import (
+    EVENT_TYPES,
+    LifecycleEvent,
+    compute_alc,
+    now_iso,
+    validate_event_type,
+)
 from raip.core.signatures import (
     ALGORITHM,
     generate_keypair,
@@ -19,9 +25,11 @@ __all__ = [
     "canonicalize",
     "compute_acf",
     "compute_file_acf",
+    "EVENT_TYPES",
     "LifecycleEvent",
     "compute_alc",
     "now_iso",
+    "validate_event_type",
     "ALGORITHM",
     "generate_keypair",
     "sign",

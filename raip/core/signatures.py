@@ -67,5 +67,5 @@ def verify(acf: str, alc: str, signature: str, public_key: Ed25519PublicKey) -> 
         sig_bytes = base64.urlsafe_b64decode(signature)
         public_key.verify(sig_bytes, payload)
         return True
-    except (InvalidSignature, Exception):
+    except (InvalidSignature, ValueError):
         return False

@@ -1,0 +1,31 @@
+module:
+  identity: raip-media
+  purpose: >
+    RAIP Media MVP — transcribes audio/video artifacts, exports transcripts
+    in multiple formats (Markdown, SRT, TXT), and attaches RAIP provenance
+    bundles (manifest + signed envelope) to every derived output.
+  inputs:
+    - media_file: path to audio/video file
+    - ed25519_private_key: signing key for provenance attestation
+    - generator_version: version string embedded in manifest
+  outputs:
+    - transcript text in requested format(s)
+    - manifest.json: artifact inventory with ACFs
+    - provenance.raip.json: signed RAIP envelope for the bundle
+  dependencies:
+    - cryptography>=41.0.0
+    - raip (internal sibling package for primitives alignment reference)
+  validation:
+    - Every artifact file must have an ACF in manifest.json
+    - provenance.raip.json attestation must verify against manifest ACF
+    - Lifecycle events must be non-empty and anchored to manifest ACF
+  risk_class: medium
+  provenance:
+    owner: aipubs-cloud
+    repo: aipubs.cloud
+    path: raip-media/
+    schema_version: "1.0"
+  lifecycle:
+    status: mvp
+    introduced: "2024-06-01"
+    last_reviewed: "2026-08-04"

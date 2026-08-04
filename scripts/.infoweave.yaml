@@ -1,0 +1,28 @@
+module:
+  identity: scripts
+  purpose: >
+    Build-time utility scripts for aipubs.cloud.
+    Currently: generate_papers_index.py scans research/papers/ for Markdown
+    frontmatter and produces a consolidated JSON search index.
+  inputs:
+    - papers_dir: directory containing *.md paper files with YAML frontmatter
+    - out: output path for the generated JSON index
+  outputs:
+    - index.json: JSON array of paper metadata entries (title, authors, abstract, etc.)
+  dependencies:
+    - PyYAML>=6.0
+    - Python stdlib (argparse, json, math, re, pathlib)
+  validation:
+    - Each paper must have a 'title' field in frontmatter to be included
+    - Output is sorted by date descending
+    - Abstract truncated to 500 characters
+  risk_class: low
+  provenance:
+    owner: aipubs-cloud
+    repo: aipubs.cloud
+    path: scripts/
+    schema_version: "1.0"
+  lifecycle:
+    status: stable
+    introduced: "2024-01-01"
+    last_reviewed: "2026-08-04"

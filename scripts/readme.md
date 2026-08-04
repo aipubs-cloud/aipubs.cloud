@@ -1,4 +1,4 @@
-Here’s a tight, high‑value breakdown of what your script does, why it works, and where it can be improved — all directly grounded in the code you shared in your active VS Code tab.
+This document describes the purpose, usage, and structure of the scripts in this directory.
 
 ---
 

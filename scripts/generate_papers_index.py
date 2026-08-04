@@ -138,10 +138,11 @@ def normalize_authors(value: Any) -> List[str]:
 
     if isinstance(value, list):
         return [
-            str(author.get("name"))
-            if isinstance(author, dict)
+            str(author["name"])
+            if isinstance(author, dict) and author.get("name") is not None
             else str(author)
             for author in value
+            if not isinstance(author, dict) or author.get("name") is not None
         ]
 
     if isinstance(value, str):

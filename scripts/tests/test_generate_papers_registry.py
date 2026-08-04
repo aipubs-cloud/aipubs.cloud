@@ -21,7 +21,7 @@ from pathlib import Path
 import pytest
 
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 REPORT_DIR = ROOT / "test-reports" / "latest"
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"

@@ -43,13 +43,23 @@ jobs:
         id: scan
         run: |
           python - << 'EOF'
-          import json, hashlib, os, sys
+          import json, hashlib, os, sys, subprocess
           from pathlib import Path
           from datetime import datetime, timezone
 
           scan_paths = ["publications", "research/papers"]
           supported_exts = {".md": "markdown", ".pdf": "pdf", ".html": "html", ".tex": "latex", ".docx": "docx"}
           since_commit = os.environ.get("INPUT_SINCE_COMMIT", "")
+
+          changed_paths = None
+          if since_commit:
+              try:
+                  out = subprocess.check_output(
+                      ["git", "diff", "--name-only", f"{since_commit}..HEAD"], text=True
+                  )
+                  changed_paths = {p for p in out.splitlines() if p.strip()}
+              except Exception:
+                  changed_paths = None
 
           discovered = []
           for base in scan_paths:

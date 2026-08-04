@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   generate-index:
@@ -32,14 +33,13 @@ jobs:
       - name: Generate search index
         run: python scripts/generate_papers_index.py --out research/papers/index.json
 
-      - name: Commit index if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet research/papers/index.json; then
-            echo "No changes to index."
-          else
-            git add research/papers/index.json
-            git commit -m "ci: regenerate papers search index [skip ci]"
-            git push
-          fi
+      - name: Open PR if index changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "ci: regenerate papers search index [skip ci]"
+          branch: ci/regenerate-papers-index
+          title: "ci: regenerate papers search index"
+          body: "Automated update of `research/papers/index.json` triggered by changes to papers or the index script."
+          labels: automated
+          add-paths: research/papers/index.json

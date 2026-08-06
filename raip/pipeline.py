@@ -123,6 +123,12 @@ _ENVELOPE_SCHEMA_NAME = "raip-envelope"
 
 def _load_schema(name: str) -> Optional[Dict[str, Any]]:
     """Load a JSON Schema by *name* (without ``.schema.json`` suffix)."""
+    import re
+
+    # Prevent path traversal / arbitrary file reads.
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", name):
+        return None
+
     path = _SCHEMAS_DIR / f"{name}.schema.json"
     if not path.exists():
         return None

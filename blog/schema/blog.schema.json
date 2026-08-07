@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIPubs Blog Post",
+  "type": "object",
+  "required": ["title", "author", "artifact_type"],
+  "properties": {
+    "title": {"type":"string"},
+    "author": {"type":"string"},
+    "artifact_type": {"const":"blog_post"},
+    "fingerprint": {"type":"string"}
+  }
+}

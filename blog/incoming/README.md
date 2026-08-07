@@ -1,7 +1,14 @@
-# Blog Incoming
+# AIPubs Blog Incoming
 
-New blog submissions enter this directory.
+Drop new publication drafts here. Submissions enter the automated publication pipeline.
 
-Workflow:
+Lifecycle:
 
 incoming -> analyzed -> reviewed -> approved -> published
+
+Automation stages:
+- AI analysis
+- RAIP validation
+- human approval
+- production build
+- Cloudflare Pages deployment

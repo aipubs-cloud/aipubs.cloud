@@ -1,0 +1,36 @@
+module:
+  identity: raip
+  purpose: >
+    Research Artifact Integrity Protocol (RAIP) sovereign core.
+    Provides deterministic canonicalization, SHA-256 artifact fingerprinting (ACF),
+    lifecycle chain construction (ALC), Ed25519 signing, and envelope verification.
+  inputs:
+    - artifact_bytes: raw bytes of the research artifact (paper, dataset, etc.)
+    - lifecycle_events: ordered list of LifecycleEvent objects
+    - ed25519_private_key: signing key (kept outside artifact logic)
+  outputs:
+    - acf: "sha256:<hex>" artifact content fingerprint
+    - alc: "sha256:<hex>" lifecycle chain hash
+    - signature: base64url-encoded Ed25519 attestation
+    - verify_report: RAIP-VERIFY-REPORT-1 structured JSON
+  dependencies:
+    - cryptography>=41.0.0
+    - PyYAML>=6.0
+    - jsonschema>=4.17.0
+  validation:
+    - ACF must match SHA-256 of artifact bytes
+    - ALC must chain all events from ACF root
+    - Signature covers canonical {"acf": ..., "alc": ...} with domain separator RAIP:SIGNED-STATE:v1
+    - All event types must belong to the allowed EVENT_TYPES set
+  risk_class: high
+  provenance:
+    owner: aipubs-cloud
+    repo: aipubs.cloud
+    path: raip/
+    schema_version: "1.0"
+  lifecycle:
+    status: stable
+    introduced:
+      project: "2024-01-01"
+      module: "2026-08-04"
+    last_reviewed: "2026-08-04"

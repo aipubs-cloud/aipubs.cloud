@@ -1,0 +1,29 @@
+module:
+  identity: docs
+  purpose: >
+    Human-readable and machine-readable documentation for the aipubs.cloud
+    platform, including RAIP whitepaper, Infoweave architecture guide,
+    governance model, and platform enhancement proposals.
+  inputs:
+    - Markdown source files in docs/
+    - mkdocs.yml configuration
+  outputs:
+    - Static HTML documentation site (built by MkDocs)
+    - infoweave/ sub-section: architecture, governance, getting-started, roadmap
+  dependencies:
+    - mkdocs (build tool, not a Python runtime dependency of core RAIP)
+  validation:
+    - All internal links must resolve
+    - mkdocs.yml nav must reference existing files
+  risk_class: low
+  provenance:
+    owner: aipubs-cloud
+    repo: aipubs.cloud
+    path: docs/
+    schema_version: "1.0"
+  lifecycle:
+    status: active
+    introduced:
+      project: "2024-01-01"
+      module: "2026-08-04"
+    last_reviewed: "2026-08-04"

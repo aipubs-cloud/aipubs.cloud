@@ -1,8 +1,7 @@
 """Tests for raip.core.lifecycle (ALC)."""
 
 import pytest
-from raip.core.lifecycle import LifecycleEvent, compute_alc
-
+from raip.core.lifecycle import LifecycleEvent, compute_alc, validate_event_type
 
 _FIXED_ACF = "sha256:2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
 _FIXED_TS = "2026-01-01T00:00:00+00:00"
@@ -71,3 +70,30 @@ def test_lifecycle_event_roundtrip():
     assert ev.timestamp == ev2.timestamp
     assert ev.actor == ev2.actor
     assert ev.metadata == ev2.metadata
+
+
+def test_validate_event_type_valid():
+    for t in ["CREATED", "SUBMITTED", "REVIEWED", "REVISED", "ACCEPTED", "PUBLISHED", "ARCHIVED", "REVOKED"]:
+        validate_event_type(t)  # must not raise
+
+
+def test_validate_event_type_invalid():
+    with pytest.raises(ValueError, match="Unknown lifecycle event type"):
+        validate_event_type("DELETED")
+
+
+def test_lifecycle_event_rejects_invalid_type():
+    with pytest.raises(ValueError, match="Unknown lifecycle event type"):
+        LifecycleEvent(type="BOGUS", timestamp="2026-01-01T00:00:00+00:00", actor="test")
+
+
+def test_lifecycle_event_from_dict_rejects_invalid_type():
+    with pytest.raises(ValueError, match="Unknown lifecycle event type"):
+        LifecycleEvent.from_dict({"type": "BOGUS", "timestamp": "2026-01-01T00:00:00+00:00", "actor": "test"})
+
+
+@pytest.mark.parametrize("invalid", ["", "created", None])
+def test_validate_event_type_edge_cases(invalid):
+    """Empty string, lowercase, and None must all raise ValueError."""
+    with pytest.raises(ValueError):
+        validate_event_type(invalid)

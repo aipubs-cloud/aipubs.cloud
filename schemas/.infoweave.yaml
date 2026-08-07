@@ -1,0 +1,29 @@
+module:
+  identity: schemas
+  purpose: >
+    JSON Schema definitions for aipubs.cloud data contracts.
+    Covers author identity, paper metadata, and publication envelopes.
+    Used by validation workflows and the publication pipeline.
+  inputs:
+    - JSON documents to validate (author, paper, publication objects)
+  outputs:
+    - schema validation pass/fail with structured error messages (via jsonschema)
+  dependencies:
+    - jsonschema>=4.17.0
+  validation:
+    - author.schema.json: validates author identity objects
+    - paper.schema.json: validates paper metadata objects
+    - publication.schema.json: validates full publication envelopes
+    - All schemas must be valid JSON Schema Draft-07 or later
+  risk_class: medium
+  provenance:
+    owner: aipubs-cloud
+    repo: aipubs.cloud
+    path: schemas/
+    schema_version: "1.0"
+  lifecycle:
+    status: stable
+    introduced:
+      project: "2024-01-01"
+      module: "2026-08-04"
+    last_reviewed: "2026-08-04"

@@ -29,4 +29,8 @@ where = ["."]
 include = ["raip*"]
 
 [tool.pytest.ini_options]
-testpaths = ["raip/tests"]
+testpaths = [
+    "raip/tests",
+    "raip/tests/contract",
+    "raip/tests/integration",
+]

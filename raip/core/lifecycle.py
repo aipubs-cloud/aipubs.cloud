@@ -14,7 +14,7 @@ Chain construction:
 import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, FrozenSet, List
 
 from raip.core.canonicalize import canonicalize
 
@@ -31,6 +31,17 @@ EVENT_TYPES: list[str] = [
     "REVOKED",
 ]
 
+_EVENT_TYPES_SET: FrozenSet[str] = frozenset(EVENT_TYPES)
+
+
+def validate_event_type(event_type: str) -> None:
+    """Raise :class:`ValueError` if *event_type* is not a recognised lifecycle event."""
+    if event_type not in _EVENT_TYPES_SET:
+        raise ValueError(
+            f"Unknown lifecycle event type {event_type!r}. "
+            f"Allowed values: {sorted(_EVENT_TYPES_SET)}"
+        )
+
 
 @dataclass
 class LifecycleEvent:
@@ -40,6 +51,9 @@ class LifecycleEvent:
     timestamp: str
     actor: str
     metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        validate_event_type(self.type)
 
     def to_dict(self) -> Dict[str, Any]:
         return {

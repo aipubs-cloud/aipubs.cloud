@@ -28,7 +28,8 @@ aipubs.cloud/
 ├── public/                 # Static assets (favicon, robots.txt, sitemap.xml)
 ├── docs/                   # Platform documentation and whitepapers
 │   ├── RAIP_WHITEPAPER.md  # Research Artifact Integrity Protocol specification
-│   └── PLATFORM_ENHANCEMENTS.md  # Product backlog
+│   ├── PLATFORM_ENHANCEMENTS.md  # Product backlog
+│   └── ...                 # Architecture, governance, and implementation docs
 ├── research/               # Community research submissions
 │   ├── papers/             # Published research papers (Markdown/MDX)
 │   ├── datasets/           # Linked or archived datasets
@@ -94,6 +95,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full submission guidelines.
 
 ---
 
+## Continuous Integration
+
+GitHub Actions are deliberately path-scoped to avoid running unrelated work. RAIP core tests run only for RAIP-core changes, RAIP Media tests run only for `raip-media/**` changes, publication validation runs only for publication content, and the site audit runs for site-related changes plus a scheduled production smoke test.
+
+See [.github/workflows/README.md](.github/workflows/README.md) for the workflow trigger matrix and automation principles.
+
+For the website audit, the documented environment contract supports local and preview targets through `MAIN_URL`, `BLOG_URL`, `BLOG_ARTICLE_URL`, and `AUDIT_ENV`. The production audit remains a scheduled smoke test while deterministic PR/preview execution is being completed under #45.
+
+---
+
 ## Technology
 
 | Layer | Technology |
@@ -102,7 +113,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full submission guidelines.
 | Icons | Phosphor Icons |
 | Hosting | Cloudflare Workers / Pages |
 | Provenance | RAIP (Research Artifact Integrity Protocol) |
-| CI | GitHub Actions (CodeQL, HTML validation) |
+| CI | GitHub Actions (CodeQL, HTML validation, publication validation, RAIP tests, site audit) |
 
 ---
 
@@ -113,6 +124,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full submission guidelines.
 - [Contributing](CONTRIBUTING.md) — How to contribute research or code
 - [Code of Conduct](CODE_OF_CONDUCT.md) — Community standards
 - [Changelog](CHANGELOG.md) — Release history
+- [GitHub Actions Guide](.github/workflows/README.md) — Workflow triggers, scope, and automation principles
 
 ---
 

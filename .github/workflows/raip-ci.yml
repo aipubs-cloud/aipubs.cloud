@@ -40,24 +40,3 @@ jobs:
 
       - name: Confirm conformance vectors pass
         run: python -m pytest raip/tests/test_vectors.py -v
-
-  raip-media-tests:
-    name: RAIP Media MVP Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install raip-media
-        run: pip install -e "./raip-media[dev]"
-
-      - name: Run tests
-        run: |
-          cd raip-media
-          python -m pytest raip_media/tests/ -v --tb=short

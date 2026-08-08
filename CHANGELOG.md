@@ -4,6 +4,39 @@ All notable changes to AIpubs.cloud are documented here.
 
 ---
 
+# Version 1.3.1
+
+## Site Audit, Publication, and Automation Maintenance
+
+Added:
+
+- Automated website accessibility and interaction audit infrastructure (#41 / #44)
+  - Playwright browser checks
+  - axe accessibility analysis
+  - Main-site and blog availability checks
+  - Mobile navigation verification
+  - Keyboard-focus verification
+  - Audit reports and GitHub Actions artifacts
+  - Scheduled production smoke testing
+- Deterministic local/preview audit documentation (#45 / #46)
+  - `MAIN_URL`, `BLOG_URL`, `BLOG_ARTICLE_URL`, and `AUDIT_ENV` environment contract
+  - Local static-server audit examples
+  - Separate production smoke-test guidance
+- Follow-up CI workflow optimization audit (#47)
+  - Tracking workflow trigger scope, job-level work selection, permission minimization, and duplicate-work prevention
+
+Updated:
+
+- Continued semantic-version changelog tracking for all newly merged website audit and automation artifacts.
+- Site quality process now treats the accessibility audit as a repeatable regression system rather than a one-time manual review.
+
+Maintenance:
+
+- Identified the remaining gap between production smoke testing and PR/preview validation for the site audit; deterministic local/preview execution remains tracked in #45.
+- Identified GitHub Actions scope optimization opportunities, including RAIP Media trigger coverage and separation of unrelated RAIP core/media test execution.
+
+---
+
 # Version 1.3.0
 
 ## Recent Merge Consolidation and Version Tracking

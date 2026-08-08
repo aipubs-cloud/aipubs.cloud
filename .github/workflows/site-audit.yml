@@ -1,0 +1,66 @@
+name: Site Accessibility and Interaction Audit
+
+on:
+  pull_request:
+    paths:
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - 'blog/**'
+      - 'tests/site-audit.mjs'
+      - '.github/workflows/site-audit.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  site-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install audit dependencies
+        run: |
+          npm init -y
+          npm install --no-save playwright @axe-core/playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run live-site audit
+        env:
+          MAIN_URL: https://aipubs.cloud/
+          BLOG_URL: https://blog.aipubs.cloud/
+          BLOG_ARTICLE_URL: ${{ vars.BLOG_ARTICLE_URL }}
+        run: node tests/site-audit.mjs 2>&1 | tee site-audit-report.txt
+
+      - name: Publish job summary
+        if: always()
+        run: |
+          echo '## AIPubs.cloud Site Audit' >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo '- Main site: https://aipubs.cloud/' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Blog: https://blog.aipubs.cloud/' >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$BLOG_ARTICLE_URL" ]; then echo "- Blog article: $BLOG_ARTICLE_URL" >> "$GITHUB_STEP_SUMMARY"; fi
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo '### Audit output' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          cat site-audit-report.txt || true >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-audit-report
+          path: site-audit-report.txt
+          if-no-files-found: warn
+          retention-days: 14
